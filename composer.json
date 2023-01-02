@@ -7,15 +7,12 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
-    "phpstan/phpstan": "^1.4.1",
     "friendsofphp/php-cs-fixer": "^3.1",
-    "orchestra/testbench": "^7.0",
-    "laravel/legacy-factories": "^1.0.4"
+    "orchestra/testbench": "^7.0"
   },
   "autoload": {
     "psr-4": {
-      "dnj\\Ticket\\": "src/",
-      "dnj\\Ticket\\Database\\Factories\\": "database/factories"
+      "dnj\\Ticket\\": "src/"
     }
   },
   "autoload-dev": {

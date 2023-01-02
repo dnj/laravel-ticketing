@@ -2,7 +2,7 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
-use dnj\Ticket\Http\Requests\DepartmentRequest;
+use dnj\Ticket\Http\Requests\DepartmentUpsertRequest;
 use dnj\Ticket\Http\Resources\DepartmentResource;
 use dnj\Ticket\Models\Department;
 
@@ -11,10 +11,6 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
 
     public function index(Request $request)
     {
@@ -30,14 +26,14 @@ class DepartmentController extends Controller
         return new DepartmentResource($department);
     }
 
-    public function store(DepartmentRequest $request)
+    public function store(DepartmentUpsertRequest $request)
     {
         $department = Department::create($request->validated());
 
         return new DepartmentResource($department);
     }
 
-    public function update(Department $department, DepartmentRequest $request)
+    public function update(Department $department, DepartmentUpsertRequest $request)
     {
         $department->fill($request->validated());
         $department->save();
@@ -49,6 +45,6 @@ class DepartmentController extends Controller
     {
         $department->delete();
 
-        return response([], 204);
+        return response()->noContent();
     }
 }

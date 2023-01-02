@@ -15,8 +15,7 @@ class DepartmentControllerTest extends TestCase
 
     public function testShowList(): void
     {
-
-        Department::factory(10)->create();
+        factory(Department::class, 10)->create();
 
         $this->getJson(route('departments.index'))
             ->assertStatus(401);
@@ -64,7 +63,7 @@ class DepartmentControllerTest extends TestCase
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
-        Department::factory(10)->create();
+        factory(Department::class, 10)->create();
 
         $this->testStore();
 
@@ -82,7 +81,7 @@ class DepartmentControllerTest extends TestCase
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
-        Department::factory(10)->create();
+        factory(Department::class, 10)->create();
 
         $departmentData = array(
             'id' =>  1
@@ -107,7 +106,7 @@ class DepartmentControllerTest extends TestCase
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
-        Department::factory(10)->create();
+        factory(Department::class, 10)->create();
 
         $departmentData = array(
             'title' =>  'Update Department'
@@ -141,7 +140,7 @@ class DepartmentControllerTest extends TestCase
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
-        Department::factory(10)->create();
+        factory(Department::class, 10)->create();
 
         $this->deleteJson(route('departments.destroy', ['department' => 20]))
             ->assertStatus(404);

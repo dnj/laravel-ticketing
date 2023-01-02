@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2828cd2f402252acc5c5f0208c620ddf",
+    "content-hash": "6302a9cf0cc0248a0ea4d7b8143a9d0a",
     "packages": [],
     "packages-dev": [
         {
@@ -855,12 +855,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/FakerPHP/Faker.git",
-                "reference": "d571441810ad98f689e86d7cfc8865743aa477e2"
+                "reference": "515eea9fdf9e3550196e8d8b13d66904bb2fce8c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/d571441810ad98f689e86d7cfc8865743aa477e2",
-                "reference": "d571441810ad98f689e86d7cfc8865743aa477e2",
+                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/515eea9fdf9e3550196e8d8b13d66904bb2fce8c",
+                "reference": "515eea9fdf9e3550196e8d8b13d66904bb2fce8c",
                 "shasum": ""
             },
             "require": {
@@ -916,7 +916,7 @@
                 "issues": "https://github.com/FakerPHP/Faker/issues",
                 "source": "https://github.com/FakerPHP/Faker/tree/main"
             },
-            "time": "2022-12-13T16:22:28+00:00"
+            "time": "2023-01-01T20:28:29+00:00"
         },
         {
             "name": "friendsofphp/php-cs-fixer",
@@ -1320,12 +1320,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "7797de80132599971fdaf03f6c0bfd62b5ae15d8"
+                "reference": "5b2b5f89795ab2801f80d82d0af8ca0c9c233c05"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/7797de80132599971fdaf03f6c0bfd62b5ae15d8",
-                "reference": "7797de80132599971fdaf03f6c0bfd62b5ae15d8",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/5b2b5f89795ab2801f80d82d0af8ca0c9c233c05",
+                "reference": "5b2b5f89795ab2801f80d82d0af8ca0c9c233c05",
                 "shasum": ""
             },
             "require": {
@@ -1499,7 +1499,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-12-31T20:52:18+00:00"
+            "time": "2023-01-02T12:20:01+00:00"
         },
         {
             "name": "laravel/legacy-factories",
@@ -2929,77 +2929,17 @@
             "time": "2022-10-15T20:52:05+00:00"
         },
         {
-            "name": "phpstan/phpstan",
-            "version": "1.9.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "bfe944856f8733013210bdd2efc0947cf0deba08"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/bfe944856f8733013210bdd2efc0947cf0deba08",
-                "reference": "bfe944856f8733013210bdd2efc0947cf0deba08",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.2|^8.0"
-            },
-            "conflict": {
-                "phpstan/phpstan-shim": "*"
-            },
-            "default-branch": true,
-            "bin": [
-                "phpstan",
-                "phpstan.phar"
-            ],
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "PHPStan - PHP Static Analysis Tool",
-            "keywords": [
-                "dev",
-                "static analysis"
-            ],
-            "support": {
-                "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.9.x"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/ondrejmirtes",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/phpstan",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2022-12-31T05:40:13+00:00"
-        },
-        {
             "name": "phpunit/php-code-coverage",
             "version": "9.2.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "7c249c113639accd644ae1576fe5c37cc03da363"
+                "reference": "3bd773131666fd5457a2a89ff790dfd2b2260ae9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/7c249c113639accd644ae1576fe5c37cc03da363",
-                "reference": "7c249c113639accd644ae1576fe5c37cc03da363",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/3bd773131666fd5457a2a89ff790dfd2b2260ae9",
+                "reference": "3bd773131666fd5457a2a89ff790dfd2b2260ae9",
                 "shasum": ""
             },
             "require": {
@@ -3063,7 +3003,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-01-01T08:21:40+00:00"
+            "time": "2023-01-02T08:36:34+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -3312,12 +3252,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "66bc1d2c005f0c036698cea0e236dcf40bff7568"
+                "reference": "9af616c4aae748a7cc83a9836d9f302011b79dd4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/66bc1d2c005f0c036698cea0e236dcf40bff7568",
-                "reference": "66bc1d2c005f0c036698cea0e236dcf40bff7568",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/9af616c4aae748a7cc83a9836d9f302011b79dd4",
+                "reference": "9af616c4aae748a7cc83a9836d9f302011b79dd4",
                 "shasum": ""
             },
             "require": {
@@ -3406,7 +3346,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-30T16:50:20+00:00"
+            "time": "2023-01-02T08:33:27+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -3973,12 +3913,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "a1acf96007170234a8399586a6e2ab8feba109d1"
+                "reference": "1f9c6d78dba280d858f74b4d8927b12a276d1a17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/a1acf96007170234a8399586a6e2ab8feba109d1",
-                "reference": "a1acf96007170234a8399586a6e2ab8feba109d1",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/1f9c6d78dba280d858f74b4d8927b12a276d1a17",
+                "reference": "1f9c6d78dba280d858f74b4d8927b12a276d1a17",
                 "shasum": ""
             },
             "require": {
@@ -4046,7 +3986,7 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.7.1"
+                "source": "https://github.com/ramsey/uuid/tree/4.x"
             },
             "funding": [
                 {
@@ -4058,7 +3998,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-31T22:20:34+00:00"
+            "time": "2023-01-01T21:27:51+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -8547,7 +8487,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "laravel/legacy-factories": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -4,7 +4,7 @@ namespace dnj\Ticket\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class DepartmentRequest extends FormRequest
+class DepartmentUpsertRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

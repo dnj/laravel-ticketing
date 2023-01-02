@@ -6,6 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware([SubstituteBindings::class])->group(
     function () {
-        Route::resource('departments', DepartmentController::class);
+        Route::resource('departments', DepartmentController::class)->middleware('auth');
     }
 );
