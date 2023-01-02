@@ -1,0 +1,230 @@
+openapi: 3.1.0
+x-stoplight:
+  id: a3xodw18xn67z
+info:
+  title: department
+  version: '1.0'
+  summary: department feature api list
+  description: ''
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /departments:
+    parameters: []
+    get:
+      summary: Get Department list
+      tags: []
+      responses:
+        '200':
+          description: Department list finded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Department'
+                  path:
+                    type: string
+                  per_page:
+                    type: integer
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - id: 1
+                        title: IT Department
+                        created_at: '2022-12-29 14:43:23.000'
+                        updated_at: '2022-12-29 14:43:23.000'
+                    path: 'http://localhost:8000/api/departments'
+                    per_page: 10
+                    next_cursor: null
+                    next_page_url: null
+                    prev_cursor: null
+                    prev_page_url: null
+        '401':
+          description: Unauthorized
+        '404':
+          description: User Not Found
+      operationId: ''
+      description: Retrieve the information of the user with the matching user ID.
+      x-internal: false
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: title
+          description: search department by title
+    post:
+      summary: ''
+      operationId: post-departments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  department:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+              examples:
+                Example 1:
+                  value:
+                    department:
+                      id: 12
+                      title: New Pepartment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+            examples:
+              Example 1:
+                value:
+                  title: New Pepartment
+        description: ''
+      description: Create new department
+  '/departments/{department}':
+    parameters:
+      - schema:
+          type: string
+        name: department
+        in: path
+        required: true
+    get:
+      summary: ''
+      operationId: get-departments-department-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  department:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+              examples:
+                Example 1:
+                  value:
+                    department:
+                      id: 1
+                      title: Ut autem perferendis.
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: Retrieve the information of the department with the matching depatment ID.
+    put:
+      summary: ''
+      operationId: put-departments-department-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  department:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+              examples:
+                Example 1:
+                  value:
+                    department:
+                      id: 12
+                      title: Update Pepartment
+      description: Update the department with the matching depatment ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+            examples:
+              Example 1:
+                value:
+                  title: string
+              Example 2:
+                value:
+                  title: Update Pepartment
+    delete:
+      summary: ''
+      operationId: delete-departments-department-id
+      responses:
+        '204':
+          description: No Content
+      description: Delete the department with the matching depatment ID.
+components:
+  schemas:
+    Department:
+      title: Department
+      type: object
+      examples:
+        - id: 1
+          title: IT Department
+          created_at: '2022-12-29 14:43:23.000'
+          updated_at: '2022-12-29 14:43:23.000'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+      x-stoplight:
+        id: e619b55a0a495
