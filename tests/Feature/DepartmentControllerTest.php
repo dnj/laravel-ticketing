@@ -1,9 +1,10 @@
 <?php
 
-namespace dnj\Ticket\Tests;
+namespace dnj\Ticket\Test\Fature;
 
 use dnj\Ticket\Models\Department;
 use dnj\Ticket\Models\User;
+use dnj\Ticket\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
