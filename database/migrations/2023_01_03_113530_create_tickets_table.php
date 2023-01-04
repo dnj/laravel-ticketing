@@ -19,7 +19,8 @@ return new class extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            if ($this->isTitleRequire())
+                $table->string('title');
             $table->unsignedBigInteger('client_id');
             $table->unsignedBigInteger('department_id');
             $table->enum('status', TicketStatus::getAllValues())->default(TicketStatus::UNREAD->value);

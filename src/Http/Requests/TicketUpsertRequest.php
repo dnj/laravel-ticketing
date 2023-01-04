@@ -3,11 +3,13 @@
 namespace dnj\Ticket\Http\Requests;
 
 use dnj\Ticket\Enums\TicketStatus;
+use dnj\Ticket\ModelHelpers;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class TicketUpsertRequest extends FormRequest
 {
+    use ModelHelpers;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -26,7 +28,7 @@ class TicketUpsertRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string',
+            'title' => Rule::when($this->isTitleRequire(), ['required', 'string']),
             'department_id' => 'required|exists:departments,id',
             'client_id' => 'sometimes|required|exists:users,id',
             'message' => [Rule::when(request()->isMethod('POST'), 'required')],
