@@ -9,11 +9,8 @@ Route::middleware([SubstituteBindings::class])->group(
     function () {
 
         Route::middleware(['auth'])->group((function () {
-            Route::resource('departments', DepartmentController::class)->middleware('auth');
-            Route::resource('tickets', TicketController::class)->middleware('auth');
-            Route::post('tickets/send-message/{ticket}', [TicketController::class, 'storeTicketMessage'])
-                ->name('tickets.send_message')
-                ->middleware('auth');
+            Route::resource('departments', DepartmentController::class);
+            Route::resource('tickets', TicketController::class);
         }));
     }
 );
