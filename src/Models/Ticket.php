@@ -68,6 +68,9 @@ class Ticket extends Model
             ->when($request->input('client_id'), function ($q, $client) {
                 return $q->where('client_id', $client);
             })
+            ->when($request->input('department_id'), function ($q, $department) {
+                return $q->whereIn('department_id', $department);
+            })
             ->when($request->input('status'), function ($q, $status) {
                 return $q->whereIn('status', $status);
             })
