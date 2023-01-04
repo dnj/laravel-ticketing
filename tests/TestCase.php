@@ -2,6 +2,7 @@
 
 namespace dnj\Ticket\Tests;
 
+use dnj\Ticket\Models\User;
 use dnj\Ticket\TicketServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -15,6 +16,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $this->withFactories(__DIR__ . '/../database/factories');
         $this->withFactories(__DIR__ . '/./factories');
+        config()->set('ticket.user_model', User::class);
     }
 
     protected function getPackageProviders($app)

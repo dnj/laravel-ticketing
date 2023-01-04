@@ -1,9 +1,10 @@
 <?php
 
+use dnj\Ticket\Models\TicketMessage;
 use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Models\User;
 
-$factory->define(Department::class, function (Faker\Generator $faker) {
+$factory->define(TicketMessage::class, function (Faker\Generator $faker) {
     return [
         'message' => $faker->text(300),
         'user_id' => auth()->loginUsingId(User::all()->random()->first()->id),

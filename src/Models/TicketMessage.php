@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace dnj\Ticket\Models;
 
 use dnj\Ticket\ModelHelpers;
 use Exception;
