@@ -13,8 +13,6 @@ class TicketMessage extends Model
 
     protected $fillable = ['user_id', 'ticket_id', 'message', 'seen_at'];
 
-    // protected $touches = ['ticket'];
-
     protected static function booting(): void
     {
         static::creating(function ($ticketMessage) {
@@ -35,6 +33,6 @@ class TicketMessage extends Model
 
     public function ticket()
     {
-        $this->belongsTo(Ticket::class);
+        return $this->belongsTo(Ticket::class);
     }
 }

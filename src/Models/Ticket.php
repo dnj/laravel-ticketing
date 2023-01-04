@@ -24,6 +24,8 @@ class Ticket extends Model
         static::creating(function ($ticket) {
             if (!isset($ticket->client_id))
                 $ticket->client_id = auth()->user()->id;
+            else
+                $ticket->status = TicketStatus::ANSWERED->value;
         });
     }
 
@@ -48,6 +50,15 @@ class Ticket extends Model
         return $this->hasMany(TicketMessage::class);
     }
 
+    public function changeTicketStatus()
+    {
+        if ($this->client_id == auth()->user()->id)
+            $this->status = TicketStatus::UNREAD->value;
+        else
+            $this->status = TicketStatus::ANSWERED->value;
+
+        $this->save();
+    }
 
     public function scopeFilter($q, $request)
     {

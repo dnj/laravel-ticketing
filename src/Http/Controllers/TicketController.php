@@ -27,6 +27,7 @@ class TicketController extends Controller
 
     public function show(Ticket $ticket)
     {
+        $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
         return new TicketResource($ticket);
     }
 
@@ -48,6 +49,7 @@ class TicketController extends Controller
     public function storeTicketMessage(Ticket $ticket, TicketMessageRequest $request)
     {
         $ticket->messages()->create($request->validated());
+        $ticket->changeTicketStatus();
 
         return new TicketResource($ticket);
     }
