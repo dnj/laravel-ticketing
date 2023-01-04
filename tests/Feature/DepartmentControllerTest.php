@@ -33,6 +33,9 @@ class DepartmentControllerTest extends TestCase
 
     public function testStore(): void
     {
+        $this->postJson(route('departments.store'))
+            ->assertStatus(401);
+
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
@@ -43,16 +46,13 @@ class DepartmentControllerTest extends TestCase
         $this->postJson(route('departments.store'))
             ->assertStatus(422)
             ->assertJson(function (AssertableJson $json) {
-                $json->has("message");
-                $json->has("errors");
-                $json->hasAll(["errors.title"]);
+                $json->hasAll(["message", "errors", "errors.title"]);
             });
 
         $this->postJson(route('departments.store'), $departmentData)
             ->assertStatus(201)
             ->assertJson(function (AssertableJson $json) use ($departmentData) {
-                $json->has("department");
-                $json->hasAll(["department.id", "department.title"]);
+                $json->hasAll(["department", "department.id", "department.title"]);
                 $json->where('department.title', $departmentData["title"]);
                 $json->etc();
             });
@@ -60,12 +60,12 @@ class DepartmentControllerTest extends TestCase
 
     public function testSearch(): void
     {
+        $this->testStore();
+
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
         factory(Department::class, 10)->create();
-
-        $this->testStore();
 
         $this->getJson(route('departments.index', ['title' => 'Test']))
             ->assertStatus(200)
@@ -78,6 +78,9 @@ class DepartmentControllerTest extends TestCase
 
     public function testShow(): void
     {
+        $this->getJson(route('departments.show', ['department' => 20]))
+            ->assertStatus(401);
+
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
@@ -93,8 +96,7 @@ class DepartmentControllerTest extends TestCase
         $this->getJson(route('departments.show', ['department' => 1]))
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($departmentData) {
-                $json->has("department");
-                $json->hasAll(["department.id", "department.title"]);
+                $json->hasAll(["department", "department.id", "department.title"]);
                 $json->where('department.id', $departmentData["id"]);
                 $json->etc();
             });
@@ -103,6 +105,9 @@ class DepartmentControllerTest extends TestCase
 
     public function testUpdate(): void
     {
+        $this->putJson(route('departments.update', ['department' => 20]))
+            ->assertStatus(401);
+
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
@@ -119,16 +124,13 @@ class DepartmentControllerTest extends TestCase
         $this->putJson(route('departments.update', ['department' => 1]))
             ->assertStatus(422)
             ->assertJson(function (AssertableJson $json) {
-                $json->has("message");
-                $json->has("errors");
-                $json->hasAll(["errors.title"]);
+                $json->hasAll(["message", "errors", "errors.title"]);
             });
 
         $this->putJson(route('departments.update', ['department' => 1]), $departmentData)
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($departmentData) {
-                $json->has("department");
-                $json->hasAll(["department.id", "department.title"]);
+                $json->hasAll(["department", "department.id", "department.title"]);
                 $json->where('department.title', $departmentData["title"]);
                 $json->etc();
             });
@@ -137,6 +139,9 @@ class DepartmentControllerTest extends TestCase
 
     public function testDelete(): void
     {
+        $this->deleteJson(route('departments.destroy', ['department' => 20]))
+            ->assertStatus(401);
+
         $user = factory(User::class)->create();
         $this->actingAs($user);
 
