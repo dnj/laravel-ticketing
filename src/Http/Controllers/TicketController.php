@@ -45,12 +45,4 @@ class TicketController extends Controller
 
         return response()->noContent();
     }
-
-    public function storeTicketMessage(Ticket $ticket, TicketMessageRequest $request)
-    {
-        $ticket->messages()->create($request->validated());
-        $ticket->changeTicketStatus();
-
-        return new TicketResource($ticket);
-    }
 }

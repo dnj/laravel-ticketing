@@ -16,9 +16,6 @@ class TicketResource extends JsonResource
     public function toArray($request)
     {
         $this->resource->load(["user", "department:id,title"]);
-        return  [
-            'ticket' => parent::toArray($request),
-            'messages' =>  TicketMessageResource::collection($this->messages)
-        ];
+        return parent::toArray($request);
     }
 }
