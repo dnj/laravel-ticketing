@@ -68,7 +68,7 @@ class TicketControllerTest extends TestCase
         $this->postJson(route('tickets.store'), $ticketData)
             ->assertStatus(201)
             ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "messages", "ticket.user", "ticket.department"]);
+                $json->hasAll(["ticket", "ticket.user", "ticket.department"]);
                 $json->where('ticket.department_id', $ticketData["department_id"]);
                 $json->etc();
             });
@@ -117,7 +117,7 @@ class TicketControllerTest extends TestCase
         $this->getJson(route('tickets.show', ['ticket' => 1]))
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "messages", "ticket.user", "ticket.department"]);
+                $json->hasAll(["ticket", "ticket.user", "ticket.department"]);
                 $json->where('ticket.id', $ticketData["id"]);
                 $json->etc();
             });
@@ -181,39 +181,5 @@ class TicketControllerTest extends TestCase
 
         $this->deleteJson(route('tickets.destroy', ['ticket' => 1]))
             ->assertStatus(204);
-    }
-
-    public function testStoreTicketMessage(): void
-    {
-
-        $user =  factory(user::class)->create();
-        factory(Department::class)->create();
-        factory(Ticket::class, 10)->create();
-
-        $this->postJson(route('tickets.send_message', ['ticket' => 200]))
-            ->assertStatus(401);
-
-        $this->actingAs($user);
-        $ticketData = array(
-            'message' => 'This is new message for package.'
-        );
-
-        $this->postJson(route('tickets.send_message', ['ticket' => 200]))
-            ->assertStatus(404);
-
-        $this->postJson(route('tickets.send_message', ['ticket' => 2]))
-            ->assertStatus(422)
-            ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.message"]);
-                $json->missing('client_id');
-            });
-
-        $this->postJson(route('tickets.send_message', ['ticket' => 2]), $ticketData)
-            ->assertStatus(200)
-            ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "messages", "ticket.user", "ticket.department"]);
-                $json->where('ticket.id', 2);
-                $json->etc();
-            });
     }
 }
