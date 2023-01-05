@@ -13,7 +13,7 @@ class TicketMessageController extends Controller
 {
     public function index(Ticket $ticket, Request $request)
     {
-        $ticketMessages = TicketMessage::where('ticket_id', $ticket->id)
+        $ticketMessages = TicketMessage::with('user')->where('ticket_id', $ticket->id)
             ->orderBy('created_a', $request->input('orderBy', 'asc'))
             ->cursorPaginate(10);
         $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);

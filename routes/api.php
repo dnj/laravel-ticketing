@@ -10,7 +10,7 @@ Route::middleware([SubstituteBindings::class, 'auth'])->group(
         Route::apiResources([
             'departments' => DepartmentController::class,
             'tickets' => TicketController::class,
-            'ticket.message' => TicketMessageController::class
+            'tickets.messages' => TicketMessageController::class
         ]);
     }
 );
