@@ -1,11 +1,16 @@
 <?php
 
 use dnj\Ticket\Http\Controllers\DepartmentController;
+use dnj\Ticket\Http\Controllers\TicketMessageController;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware([SubstituteBindings::class])->group(
+Route::middleware([SubstituteBindings::class, 'auth'])->group(
     function () {
-        Route::resource('departments', DepartmentController::class)->middleware('auth');
+        Route::apiResources([
+            'departments' => DepartmentController::class,
+            'tickets' => TicketController::class,
+            'ticket.message' => TicketMessageController::class
+        ]);
     }
 );
