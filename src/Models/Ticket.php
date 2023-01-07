@@ -2,6 +2,7 @@
 
 namespace dnj\Ticket\Models;
 
+use dnj\Ticket\Database\Factories\TicketFactory;
 use dnj\Ticket\Enums\TicketStatus;
 use dnj\Ticket\ModelHelpers;
 use Exception;
@@ -10,6 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
 {
+    protected static function newFactory()
+    {
+        return TicketFactory::new();
+    }
+
     use HasFactory, ModelHelpers;
 
     protected $fillable = ['title', 'client_id', 'department_id', 'status'];
@@ -17,26 +23,16 @@ class Ticket extends Model
         'status' => TicketStatus::class,
     ];
 
-    protected $with = ['user', 'department'];
+    protected $with = ['client', 'department'];
 
-    protected static function booting(): void
-    {
-        static::creating(function ($ticket) {
-            if (!isset($ticket->client_id))
-                $ticket->client_id = auth()->user()->id;
-            else
-                $ticket->status = TicketStatus::ANSWERED->value;
-        });
-    }
-
-    public function user()
+    public function client()
     {
         $model = $this->getUserModel();
         if (null === $model) {
             throw new Exception('No user model is configured under ticket.user_model config');
         }
 
-        return $this->belongsTo($model, 'client_id');
+        return $this->belongsTo($model);
     }
 
 
@@ -48,39 +44,5 @@ class Ticket extends Model
     public function messages()
     {
         return $this->hasMany(TicketMessage::class);
-    }
-
-    public function changeTicketStatus()
-    {
-        if ($this->client_id == auth()->user()->id)
-            $this->status = TicketStatus::UNREAD->value;
-        else
-            $this->status = TicketStatus::ANSWERED->value;
-
-        $this->save();
-    }
-
-    public function scopeFilter($q, $request)
-    {
-        return $q->when($request->input('title'), function ($q, $title) {
-            return $q->where('title', 'like', '%' . $title . '%');
-        })
-            ->when($request->input('client_id'), function ($q, $client) {
-                return $q->where('client_id', $client);
-            })
-            ->when($request->input('department_id'), function ($q, $department) {
-                return $q->whereIn('department_id', $department);
-            })
-            ->when($request->input('status'), function ($q, $status) {
-                return $q->whereIn('status', $status);
-            })
-            ->when($request->input('created_start_date'), function ($q, $created_start_date) use ($request) {
-                $created_end_date = $request->input('created_end_date', now());
-                return $q->whereBetween('created_at', [$created_start_date, $created_end_date]);
-            })
-            ->when($request->input('updated_start_date'), function ($q, $updated_start_date) use ($request) {
-                $updated_end_date = $request->input('updated_end_date', now());
-                return $q->whereBetween('updated_at', [$updated_start_date, $updated_end_date]);
-            });
     }
 }

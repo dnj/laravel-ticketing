@@ -2,6 +2,7 @@
 
 namespace dnj\Ticket\Models;
 
+use dnj\Ticket\Database\Factories\TicketMessageFactory;
 use dnj\Ticket\ModelHelpers;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,17 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class TicketMessage extends Model
 {
+    protected static function newFactory()
+    {
+        return TicketMessageFactory::new();
+    }
+
     use HasFactory, ModelHelpers;
 
     protected $fillable = ['user_id', 'ticket_id', 'message', 'seen_at'];
-
-    protected static function booting(): void
-    {
-        static::creating(function ($ticketMessage) {
-            $ticketMessage->user_id = auth()->user()->id;
-        });
-    }
-
 
     public function user()
     {

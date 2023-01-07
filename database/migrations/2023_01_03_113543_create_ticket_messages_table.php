@@ -9,22 +9,21 @@ return new class extends Migration
 {
 
     use ModelHelpers;
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+
+    public function up(): void
     {
         Schema::create('ticket_messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('ticket_id');
+            $table->foreignId('user_id');
+
+            $table->foreignId('ticket_id')
+                ->references('id')
+                ->on('tickets')
+                ->cascadeOnDelete();
+
             $table->text('message');
             $table->timestamp('seen_at')->nullable();
             $table->timestamps();
-
-            $table->foreign('ticket_id')->references('id')->on('tickets')->cascadeOnDelete();
 
             $userTable = $this->getUserTable();
             if ($userTable) {
@@ -37,12 +36,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ticket_messages');
     }

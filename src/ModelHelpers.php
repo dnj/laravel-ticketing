@@ -4,11 +4,10 @@ namespace dnj\Ticket;
 
 trait ModelHelpers
 {
-    protected function isTitleRequire(): ?string
+    protected function isTitleRequire(): bool
     {
         return config('ticket.title');
     }
-
 
     protected function getUserModel(): ?string
     {

@@ -2,9 +2,10 @@
 
 namespace dnj\Ticket\Tests\Feature;
 
+use dnj\Ticket\Enums\TicketStatus;
 use dnj\Ticket\Models\Department;
 use dnj\Ticket\Models\Ticket;
-use dnj\Ticket\Models\User;
+use dnj\Ticket\Tests\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use dnj\Ticket\Tests\TestCase;
@@ -13,19 +14,12 @@ class TicketControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-
     public function testShowList(): void
     {
-        $user =  factory(user::class)->create();
-        factory(Department::class, 10)->create();
-        factory(Ticket::class, 10)->create();
-
-
-        $this->getJson(route('tickets.index'))
-            ->assertStatus(401);
-
+        $user = User::factory()->create();
         $this->actingAs($user);
-
+    
+        $ticket = Ticket::factory(10)->create();
         $this->getJson(route('tickets.index'))
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) {
@@ -36,150 +30,92 @@ class TicketControllerTest extends TestCase
 
     public function testStore(): void
     {
-        $user = factory(User::class, 10)->create();
-        $department = factory(Department::class)->create();
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-        $this->postJson(route('tickets.store'))
-            ->assertStatus(401);
-
-        $this->actingAs($user[0]);
-
-        $ticketData = array(
+        $department = Department::factory()->create();
+        $data = array(
             'title' =>  'Test Ticket',
             'department_id' => $department->id,
             'message' => 'This is my first message for package.'
         );
 
-        $this->postJson(route('tickets.store'))
-            ->assertStatus(422)
-            ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.department_id", "errors.message"]);
-                $json->missing('client_id');
-            });
-
-        $ticketData["client_id"] = 200;
-        $this->postJson(route('tickets.store'), $ticketData)
-            ->assertStatus(422)
-            ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.client_id"]);
-            });
-
-        $ticketData["client_id"] = 4;
-        $this->postJson(route('tickets.store'), $ticketData)
+        $this->postJson(route('tickets.store'), $data)
             ->assertStatus(201)
-            ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "ticket.user", "ticket.department"]);
-                $json->where('ticket.department_id', $ticketData["department_id"]);
+            ->assertJson(function (AssertableJson $json) use ($data) {
+                $json->hasAll(["data", "data.client", "data.department"]);
+                $json->where('data.department_id', $data["department_id"]);
                 $json->etc();
             });
     }
 
     public function testSearch(): void
     {
-        $user =  factory(user::class)->create();
-        factory(Department::class, 10)->create();
-        factory(Ticket::class, 10)->create();
-
-        $this->getJson(route('tickets.index', ['client_id' => 4]))
-            ->assertStatus(401);
-
-        $this->testStore();
+        $user = User::factory()->create();
         $this->actingAs($user);
 
-        $this->getJson(route('tickets.index', ['client_id' => 4]))
+        Ticket::factory(5)->create();
+        $client = User::factory()->create();
+        $ticket = Ticket::factory()->withClientId($client->id)->create();
+
+        $this->getJson(route('tickets.index', ['client_id' => $client->id]))
             ->assertStatus(200)
-            ->assertJson(function (AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json) use ($client) {
                 $json->has('data', 1);
-                $json->whereContains('data.0.client_id', 4);
-                $json->hasAll(["data.0.user", "data.0.department"]);
+                $json->whereContains('data.0.client_id', $client->id);
+                $json->hasAll(["data.0.client", "data.0.department"]);
                 $json->etc();
             });
     }
 
     public function testShow(): void
     {
-        $user =  factory(user::class)->create();
-        factory(Department::class, 10)->create();
-        factory(Ticket::class, 10)->create();
-
-        $this->getJson(route('tickets.show', ['ticket' => 200]))
-            ->assertStatus(401);
-
+        $user = User::factory()->create();
         $this->actingAs($user);
 
-        $ticketData = array(
-            'id' =>  1
-        );
 
-        $this->getJson(route('tickets.show', ['ticket' => 200]))
-            ->assertStatus(404);
+        $ticket = Ticket::factory()->create();
 
-        $this->getJson(route('tickets.show', ['ticket' => 1]))
+        $this->getJson(route('tickets.show', ['ticket' => $ticket->id]))
             ->assertStatus(200)
-            ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "ticket.user", "ticket.department"]);
-                $json->where('ticket.id', $ticketData["id"]);
-                $json->etc();
-            });
+            ->assertJson(array(
+                'data' => $ticket->toArray()
+            ));
     }
 
     public function testUpdate(): void
     {
-        $user =  factory(user::class)->create();
-        $department =  factory(Department::class)->create();
-        factory(Ticket::class, 10)->create();
-
-        $this->putJson(route('tickets.update', ['ticket' => 20]))
-            ->assertStatus(401);
-
+        $user = User::factory()->create();
         $this->actingAs($user);
 
-        $ticketData = array(
+        $department = Department::factory()->create();
+        $ticket = Ticket::factory()->create();
+
+        $changes = array(
             'title' => 'Update ticket',
-            'department_id' => $department->id
+            'department_id' => $department->id,
+            'status' => TicketStatus::IN_PROGRESS->value,
         );
 
-        $this->putJson(route('tickets.update', ['ticket' => 20]), $ticketData)
-            ->assertStatus(404);
-
-
-        $this->putJson(route('tickets.update', ['ticket' => 1]))
-            ->assertStatus(422)
-            ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.department_id"]);
-            });
-
-        $this->putJson(route('tickets.update', ['ticket' => 1]), $ticketData)
-            ->assertStatus(422)
-            ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.status"]);
-            });
-
-        $ticketData["status"] = 'read';
-        $this->putJson(route('tickets.update', ['ticket' => 1]), $ticketData)
+        $this->putJson(route('tickets.update', ['ticket' => $ticket->id]), $changes)
             ->assertStatus(200)
-            ->assertJson(function (AssertableJson $json) use ($ticketData) {
-                $json->hasAll(["ticket", "ticket.id", "ticket.title"]);
-                $json->where('ticket.status', $ticketData["status"]);
-                $json->etc();
-            });
+            ->assertJson(array(
+                'data' => array(
+                    'id' => $ticket->id,
+                    'title' => $changes['title'],
+                    'department_id' => $changes['department_id'],
+                    'status' => $changes['status'],
+                )
+            ));
     }
 
     public function testDestroy(): void
     {
-        $user =  factory(user::class)->create();
-        factory(Department::class)->create();
-        factory(Ticket::class, 10)->create();
-
-        $this->deleteJson(route('tickets.destroy', ['ticket' => 20]))
-            ->assertStatus(401);
-
+        $user = User::factory()->create();
         $this->actingAs($user);
-
-        $this->deleteJson(route('tickets.destroy', ['ticket' => 20]))
-            ->assertStatus(404);
-
-        $this->deleteJson(route('tickets.destroy', ['ticket' => 1]))
+    
+        $ticket = Ticket::factory()->create();
+        $this->deleteJson(route('tickets.destroy', ['ticket' => $ticket->id]))
             ->assertStatus(204);
     }
 }

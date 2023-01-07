@@ -12,7 +12,8 @@
   },
   "autoload": {
     "psr-4": {
-      "dnj\\Ticket\\": "src/"
+      "dnj\\Ticket\\": "src/",
+      "dnj\\Ticket\\Database\\Factories\\": "database/factories/"
     }
   },
   "autoload-dev": {
@@ -38,5 +39,6 @@
     }
   },
   "license": "MIT",
-  "minimum-stability": "dev"
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

@@ -10,23 +10,22 @@ return new class extends Migration
 {
 
     use ModelHelpers;
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+
+
+    public function up(): void
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            if ($this->isTitleRequire())
+            if ($this->isTitleRequire()){
                 $table->string('title');
-            $table->unsignedBigInteger('client_id');
-            $table->unsignedBigInteger('department_id');
+            }
+            $table->foreignId('client_id');
+            $table->foreignId('department_id')
+                ->references("id")
+                ->on("departments")
+                ->cascadeOnDelete();
             $table->enum('status', TicketStatus::getAllValues())->default(TicketStatus::UNREAD->value);
             $table->timestamps();
-
-            $table->foreign('department_id')->references('id')->on('departments')->cascadeOnDelete();
 
             $userTable = $this->getUserTable();
             if ($userTable) {
@@ -39,12 +38,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('tickets');
     }

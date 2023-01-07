@@ -16,9 +16,9 @@ class DepartmentController extends Controller
     {
         $items = Department::where('title', 'like', '%' . $request->input('title', '') . '%')
             ->orderBy('id')
-            ->cursorPaginate(10);
+            ->cursorPaginate();
 
-        return $items;
+        return new DepartmentResource($items);
     }
 
     public function show(Department $department)
