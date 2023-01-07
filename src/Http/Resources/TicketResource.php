@@ -8,7 +8,8 @@ class TicketResource extends JsonResource
 {
     public function toArray($request)
     {
-        $this->resource->load(["client", "department"]);
+        $this->resource->load(['client', 'department']);
+
         return parent::toArray($request);
     }
 }

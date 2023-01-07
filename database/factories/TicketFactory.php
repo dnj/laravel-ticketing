@@ -1,4 +1,5 @@
 <?php
+
 namespace dnj\Ticket\Database\Factories;
 
 use dnj\Ticket\ModelHelpers;
@@ -19,6 +20,7 @@ class TicketFactory extends Factory
     public function definition()
     {
         $userModel = $this->getUserModel() ?? User::class;
+
         return [
             'title' => fake()->sentence(3),
             'client_id' => $userModel::factory(),

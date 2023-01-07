@@ -19,12 +19,12 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            TicketServiceProvider::class
+            TicketServiceProvider::class,
         ];
     }
 
     protected function defineDatabaseMigrations()
     {
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
     }
 }

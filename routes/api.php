@@ -8,6 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware([SubstituteBindings::class, 'auth'])->group(function () {
     Route::apiResources([
         'departments' => DepartmentController::class,
-        'tickets' => TicketController::class
+        'tickets' => TicketController::class,
     ]);
 });

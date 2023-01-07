@@ -6,9 +6,9 @@ use dnj\Ticket\Enums\TicketStatus;
 use dnj\Ticket\Http\Requests\TicketStoreRequest;
 use dnj\Ticket\Http\Requests\TicketUpdateRequest;
 use dnj\Ticket\Http\Resources\TicketResource;
-use Illuminate\Routing\Controller;
 use dnj\Ticket\Models\Ticket;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class TicketController extends Controller
 {
@@ -17,7 +17,7 @@ class TicketController extends Controller
         $q = Ticket::query();
         $q->orderBy('updated_at', 'desc');
         $q->when($request->input('title'), function ($q, $title) {
-            return $q->where('title', 'like', '%' . $title . '%');
+            return $q->where('title', 'like', '%'.$title.'%');
         })
         ->when($request->input('client_id'), function ($q, $client) {
             return $q->where('client_id', $client);
@@ -30,12 +30,15 @@ class TicketController extends Controller
         })
         ->when($request->input('created_start_date'), function ($q, $created_start_date) use ($request) {
             $created_end_date = $request->input('created_end_date', now());
+
             return $q->whereBetween('created_at', [$created_start_date, $created_end_date]);
         })
         ->when($request->input('updated_start_date'), function ($q, $updated_start_date) use ($request) {
             $updated_end_date = $request->input('updated_end_date', now());
+
             return $q->whereBetween('updated_at', [$updated_start_date, $updated_end_date]);
         });
+
         return new TicketResource($q->cursorPaginate());
     }
 
@@ -49,7 +52,7 @@ class TicketController extends Controller
         $ticket->save();
         $ticket->messages()->create([
             'user_id' => auth()->user()->id,
-            'message' => $request->message
+            'message' => $request->message,
         ]);
 
         return new TicketResource($ticket);
@@ -60,6 +63,7 @@ class TicketController extends Controller
         if (auth()->user()->id == $ticket->client_id) {
             $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
         }
+
         return new TicketResource($ticket);
     }
 

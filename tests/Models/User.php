@@ -8,12 +8,12 @@ use Illuminate\Foundation\Auth\User as BaseUser;
 
 class User extends BaseUser
 {
+    use HasFactory;
+
     protected static function newFactory()
     {
         return UserFactory::new();
     }
-
-    use HasFactory;
 
     protected $table = 'users';
 }

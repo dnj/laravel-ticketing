@@ -5,16 +5,14 @@ namespace dnj\Ticket\Http\Controllers;
 use dnj\Ticket\Http\Requests\DepartmentUpsertRequest;
 use dnj\Ticket\Http\Resources\DepartmentResource;
 use dnj\Ticket\Models\Department;
-
-use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class DepartmentController extends Controller
 {
-
     public function index(Request $request)
     {
-        $items = Department::where('title', 'like', '%' . $request->input('title', '') . '%')
+        $items = Department::where('title', 'like', '%'.$request->input('title', '').'%')
             ->orderBy('id')
             ->cursorPaginate();
 

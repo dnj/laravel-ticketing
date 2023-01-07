@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
+    use HasFactory;
+
     protected static function newFactory()
     {
         return DepartmentFactory::new();
     }
-
-    use HasFactory;
 
     protected $fillable = ['title'];
 }

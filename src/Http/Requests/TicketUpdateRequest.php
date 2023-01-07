@@ -24,10 +24,9 @@ class TicketUpdateRequest extends FormRequest
     {
         return [
             'title' => $this->isTitleRequire() ? ['sometimes', 'required', 'string'] : [],
-            'department_id' => ['sometimes', 'required', Rule::exists(Department::class, "id")],
+            'department_id' => ['sometimes', 'required', Rule::exists(Department::class, 'id')],
             'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel())],
             'status' => ['sometimes', 'required', Rule::enum(TicketStatus::class)],
         ];
     }
-
 }
