@@ -2,11 +2,18 @@
 
 namespace dnj\Ticket\Models;
 
+use dnj\Ticket\Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
+    protected static function newFactory()
+    {
+        return DepartmentFactory::new();
+    }
+
     use HasFactory;
+
     protected $fillable = ['title'];
 }

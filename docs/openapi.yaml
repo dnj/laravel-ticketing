@@ -1,0 +1,637 @@
+openapi: 3.1.0
+x-stoplight:
+  id: a3xodw18xn67z
+info:
+  title: department
+  version: '1.0'
+  summary: department feature api list
+  description: ''
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /departments:
+    parameters: []
+    get:
+      summary: Get Department list
+      tags: []
+      responses:
+        '200':
+          description: Department list finded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Department'
+                  path:
+                    type: string
+                  per_page:
+                    type: integer
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - id: 1
+                        title: IT Department
+                        created_at: '2022-12-29 14:43:23.000'
+                        updated_at: '2022-12-29 14:43:23.000'
+                    path: 'http://localhost:8000/api/departments'
+                    per_page: 10
+                    next_cursor: null
+                    next_page_url: null
+                    prev_cursor: null
+                    prev_page_url: null
+        '401':
+          description: Unauthorized
+        '404':
+          description: User Not Found
+      operationId: ''
+      description: Retrieve the information of the ticket with the matching ticket ID.
+      x-internal: false
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: title
+          description: search department by title
+    post:
+      summary: Create new department
+      operationId: post-departments
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+              examples:
+                Example 1:
+                  value:
+                    id: 1
+                    title: IT Department
+                    created_at: '2022-12-29 14:43:23.000'
+                    updated_at: '2022-12-29 14:43:23.000'
+        '401':
+          description: Unauthorized
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+            examples:
+              Example 1:
+                value:
+                  title: New Department
+        description: ''
+      description: Create new department
+  '/departments/{department}':
+    parameters:
+      - schema:
+          type: string
+        name: department
+        in: path
+        required: true
+    get:
+      summary: Show department details
+      operationId: get-departments-department-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+              examples:
+                Example 1:
+                  value:
+                    department:
+                      id: 1
+                      title: Ut autem perferendis.
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: Retrieve the information of the department with the matching depatment ID.
+    put:
+      summary: Update ticket
+      operationId: put-departments-department-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+              examples:
+                Example 1:
+                  value:
+                    department:
+                      id: 12
+                      title: Update Department
+      description: Update the department with the matching depatment ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required:
+                - title
+            examples:
+              Example 1:
+                value:
+                  title: string
+              Example 2:
+                value:
+                  title: Update Department
+    delete:
+      summary: Delete department
+      operationId: delete-departments-department-id
+      responses:
+        '204':
+          description: No Content
+      description: Delete the department with the matching depatment ID.
+  /tickets:
+    parameters: []
+    get:
+      summary: Get Ticket list
+      tags: []
+      responses:
+        '200':
+          description: Ticket list finded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ticket'
+                  path:
+                    type: string
+                  per_page:
+                    type: integer
+                  next_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  next_page_url:
+                    type:
+                      - string
+                      - 'null'
+                  prev_cursor:
+                    type:
+                      - string
+                      - 'null'
+                  prev_page_url:
+                    type:
+                      - string
+                      - 'null'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - id: 1
+                        title: Mollitia et ut illum.
+                        client_id: 1
+                        department_id: 1
+                        status: unread
+                        created_at: '2023-01-04T10:34:52.000000Z'
+                        updated_at: '2023-01-04T10:34:52.000000Z'
+                        user:
+                          id: 1
+                          name: Albina Windler
+                        department:
+                          id: 1
+                          title: Rem est corrupti.
+                    path: string
+                    per_page: 0
+                    next_cursor: string
+                    next_page_url: string
+                    prev_cursor: string
+                    prev_page_url: string
+        '401':
+          description: Unauthorized
+        '404':
+          description: User Not Found
+      operationId: ''
+      description: Retrieve the information of the ticket with the matching ticket ID.
+      x-internal: false
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: title
+          description: search ticket by title
+        - schema:
+            type: string
+          in: query
+          name: client_id
+          description: search ticket by client_id
+        - schema:
+            type: string
+          in: query
+          description: search ticket by status
+          name: status
+        - schema:
+            type: string
+          in: query
+          description: search ticket by created_start_date
+          name: created_start_date
+        - schema:
+            type: string
+          in: query
+          description: search ticket by created_end_date
+          name: created_end_date
+        - schema:
+            type: string
+          in: query
+          description: search ticket by updated_start_date
+          name: updated_start_date
+        - schema:
+            type: string
+          in: query
+          name: updated_end_date
+          description: search ticket by updated_end_date
+    post:
+      summary: Create new ticket
+      operationId: post-tickets
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    $ref: '#/components/schemas/Ticket'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TicketMessage'
+              examples:
+                Example 1:
+                  value:
+                    ticket:
+                      id: 1
+                      title: Mollitia et ut illum.
+                      client_id: 1
+                      department_id: 1
+                      status: unread
+                      created_at: '2023-01-04T10:34:52.000000Z'
+                      updated_at: '2023-01-04T10:34:52.000000Z'
+                      user:
+                        id: 1
+                        name: Albina Windler
+                      department:
+                        id: 1
+                        title: Rem est corrupti.
+                    messages:
+                      - id: 1
+                        user_id: 1
+                        ticket_id: 4
+                        message: Hic voluptates reprehenderit qui dolor. Officiis aperiam consequatur quia sapiente mollitia dolor inventore. Ut facere maiores eaque facere minus sed vel. Omnis nostrum sunt autem ut aliquid. Nam pariatur id doloribus.
+                        seen_at: '2023-01-04T10:34:53.000000Z'
+                        created_at: '2023-01-04T10:34:53.000000Z'
+                        updated_at: '2023-01-04T10:34:53.000000Z'
+                        user:
+                          id: 1
+        '401':
+          description: Unauthorized
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: required if true in config file
+                client_id:
+                  type: integer
+                department_id:
+                  type: integer
+                message:
+                  type: string
+              required:
+                - title
+                - client_id
+                - department_id
+                - message
+            examples:
+              Example 1:
+                value:
+                  title: string
+                  client_id: 1
+                  department_id: 1
+                  message: string
+        description: ''
+      description: Create new ticket
+  '/tickets/{ticket}':
+    parameters:
+      - schema:
+          type: string
+        name: ticket
+        in: path
+        required: true
+    get:
+      summary: Show ticket details
+      operationId: get-tickets-ticket-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    $ref: '#/components/schemas/Ticket'
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TicketMessage'
+              examples:
+                Example 1:
+                  value:
+                    ticket:
+                      id: 1
+                      title: Mollitia et ut illum.
+                      client_id: 1
+                      department_id: 1
+                      status: unread
+                      created_at: '2023-01-04T10:34:52.000000Z'
+                      updated_at: '2023-01-04T10:34:52.000000Z'
+                      user:
+                        id: 1
+                        name: Albina Windler
+                      department:
+                        id: 1
+                        title: Rem est corrupti.
+                    messages:
+                      - id: 1
+                        user_id: 1
+                        ticket_id: 4
+                        message: Hic voluptates reprehenderit qui dolor. Officiis aperiam consequatur quia sapiente mollitia dolor inventore. Ut facere maiores eaque facere minus sed vel. Omnis nostrum sunt autem ut aliquid. Nam pariatur id doloribus.
+                        seen_at: '2023-01-04T10:34:53.000000Z'
+                        created_at: '2023-01-04T10:34:53.000000Z'
+                        updated_at: '2023-01-04T10:34:53.000000Z'
+                        user:
+                          id: 1
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: Retrieve the information of the ticket with the matching ticket ID.
+    put:
+      summary: Update ticket item
+      operationId: put-tickets-ticket-id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    $ref: '#/components/schemas/Ticket'
+                  message:
+                    $ref: '#/components/schemas/TicketMessage'
+              examples: {}
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: Update the ticket with the matching ticket ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  title: string
+                  client_id: 1
+                  department_id: 1
+                  message: string
+              properties:
+                title:
+                  type: string
+                  description: Required if enabled in config file
+                client_id:
+                  type: integer
+                department_id:
+                  type: integer
+                status:
+                  type: string
+                  example: read
+                  enum:
+                    - unread
+                    - read
+                    - in_progress
+                    - answered
+                    - closed
+              required:
+                - title
+                - client_id
+                - department_id
+                - status
+            examples:
+              Example 1:
+                value:
+                  title: string
+                  client_id: 0
+                  department_id: 0
+                  status: read
+    delete:
+      summary: Delete ticket item
+      operationId: delete-tickets-ticket-id
+      responses:
+        '204':
+          description: No Content
+      description: Delete the ticket with the matching ticket ID.
+components:
+  schemas:
+    Department:
+      title: Department
+      type: object
+      examples:
+        - id: 1
+          title: IT Department
+          created_at: '2022-12-29 14:43:23.000'
+          updated_at: '2022-12-29 14:43:23.000'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+      x-stoplight:
+        id: e619b55a0a495
+    Ticket:
+      type: object
+      x-examples:
+        Example 1:
+          id: 1
+          title: Mollitia et ut illum.
+          client_id: 1
+          department_id: 1
+          status: unread
+          created_at: '2023-01-04T10:34:52.000000Z'
+          updated_at: '2023-01-04T10:34:52.000000Z'
+          user:
+            id: 1
+            name: Albina Windler
+            email: lyric47@example.net
+            created_at: '2023-01-04T10:34:52.000000Z'
+            updated_at: '2023-01-04T10:34:52.000000Z'
+          department:
+            id: 1
+            title: Rem est corrupti.
+      examples:
+        - id: 1
+          title: Mollitia et ut illum.
+          client_id: 1
+          department_id: 1
+          status: unread
+          created_at: '2023-01-04T10:34:52.000000Z'
+          updated_at: '2023-01-04T10:34:52.000000Z'
+          user:
+            id: 1
+            name: Albina Windler
+          department:
+            id: 1
+            title: Rem est corrupti.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        client_id:
+          type: integer
+        department_id:
+          type: integer
+        status:
+          type: string
+          enum:
+            - unread
+            - read
+            - in_progress
+            - answered
+            - closed
+          default: unread
+          example: unread
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        department:
+          type: object
+          properties:
+            id:
+              type: integer
+            title:
+              type: string
+    TicketMessage:
+      title: TicketMessage
+      x-stoplight:
+        id: fjgw519ameth5
+      type: object
+      examples:
+        - id: 1
+          user_id: 1
+          ticket_id: 4
+          message: Hic voluptates reprehenderit qui dolor. Officiis aperiam consequatur quia sapiente mollitia dolor inventore. Ut facere maiores eaque facere minus sed vel. Omnis nostrum sunt autem ut aliquid. Nam pariatur id doloribus.
+          seen_at: '2023-01-04T10:34:53.000000Z'
+          created_at: '2023-01-04T10:34:53.000000Z'
+          updated_at: '2023-01-04T10:34:53.000000Z'
+          user:
+            id: 1
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        ticket_id:
+          type: integer
+          example: 4
+        message:
+          type: string
+          example: Hic voluptates reprehenderit qui dolor. Officiis aperiam consequatur quia sapiente mollitia dolor inventore. Ut facere maiores eaque facere minus sed vel. Omnis nostrum sunt autem ut aliquid. Nam pariatur id doloribus.
+        seen_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          example: '2023-01-04T10:34:53.000000Z'
+        created_at:
+          type: string
+          format: date-time
+          example: '2023-01-04T10:34:53.000000Z'
+        updated_at:
+          type: string
+          example: '2023-01-04T10:34:53.000000Z'
+          format: date-time
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+      required:
+        - message
+  responses: {}
