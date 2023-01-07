@@ -2,6 +2,7 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
+use dnj\Ticket\Enums\TicketStatus;
 use dnj\Ticket\Http\Requests\TicketStoreRequest;
 use dnj\Ticket\Http\Requests\TicketUpdateRequest;
 use dnj\Ticket\Http\Resources\TicketResource;
@@ -40,9 +41,11 @@ class TicketController extends Controller
 
     public function store(TicketStoreRequest $request)
     {
+        $me = auth()->user()->id;
         $ticket = new Ticket();
-        $ticket->client_id = auth()->user()->id;
+        $ticket->client_id = $me;
         $ticket->fill($request->validated());
+        $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
         $ticket->save();
         $ticket->messages()->create([
             'user_id' => auth()->user()->id,
@@ -54,7 +57,9 @@ class TicketController extends Controller
 
     public function show(Ticket $ticket)
     {
-        $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
+        if (auth()->user()->id == $ticket->client_id) {
+            $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
+        }
         return new TicketResource($ticket);
     }
 

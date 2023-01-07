@@ -24,7 +24,7 @@ class TicketStoreRequest extends FormRequest
         return [
             'title' => $this->isTitleRequire() ? ['required', 'string'] : [],
             'department_id' => ['required', Rule::exists(Department::class, "id")],
-            'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel())],
+            'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel(), "id")],
             'message' => ['required'],
         ];
     }
