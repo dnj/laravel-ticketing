@@ -17,27 +17,27 @@ class TicketController extends Controller
         $q = Ticket::query();
         $q->orderBy('updated_at', 'desc');
         $q->when($request->input('title'), function ($q, $title) {
-            return $q->where('title', 'like', '%'.$title.'%');
+            return $q->where('title', 'like', '%' . $title . '%');
         })
-        ->when($request->input('client_id'), function ($q, $client) {
-            return $q->where('client_id', $client);
-        })
-        ->when($request->input('department_id'), function ($q, $department) {
-            return $q->whereIn('department_id', $department);
-        })
-        ->when($request->input('status'), function ($q, $status) {
-            return $q->whereIn('status', $status);
-        })
-        ->when($request->input('created_start_date'), function ($q, $created_start_date) use ($request) {
-            $created_end_date = $request->input('created_end_date', now());
+            ->when($request->input('client_id'), function ($q, $client) {
+                return $q->where('client_id', $client);
+            })
+            ->when($request->input('department_id'), function ($q, $department) {
+                return $q->whereIn('department_id', $department);
+            })
+            ->when($request->input('status'), function ($q, $status) {
+                return $q->whereIn('status', $status);
+            })
+            ->when($request->input('created_start_date'), function ($q, $created_start_date) use ($request) {
+                $created_end_date = $request->input('created_end_date', now());
 
-            return $q->whereBetween('created_at', [$created_start_date, $created_end_date]);
-        })
-        ->when($request->input('updated_start_date'), function ($q, $updated_start_date) use ($request) {
-            $updated_end_date = $request->input('updated_end_date', now());
+                return $q->whereBetween('created_at', [$created_start_date, $created_end_date]);
+            })
+            ->when($request->input('updated_start_date'), function ($q, $updated_start_date) use ($request) {
+                $updated_end_date = $request->input('updated_end_date', now());
 
-            return $q->whereBetween('updated_at', [$updated_start_date, $updated_end_date]);
-        });
+                return $q->whereBetween('updated_at', [$updated_start_date, $updated_end_date]);
+            });
 
         return new TicketResource($q->cursorPaginate());
     }
@@ -60,10 +60,6 @@ class TicketController extends Controller
 
     public function show(Ticket $ticket)
     {
-        if (auth()->user()->id == $ticket->client_id) {
-            $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
-        }
-
         return new TicketResource($ticket);
     }
 
