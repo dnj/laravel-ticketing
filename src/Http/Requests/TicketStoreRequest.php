@@ -26,6 +26,7 @@ class TicketStoreRequest extends FormRequest
             'department_id' => ['required', Rule::exists(Department::class, 'id')],
             'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel(), 'id')],
             'message' => ['required'],
+            'attachments.*' => array_merge(['sometimes'], config('ticket.attachment_rules')),
         ];
     }
 }

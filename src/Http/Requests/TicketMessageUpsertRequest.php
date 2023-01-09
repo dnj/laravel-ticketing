@@ -20,6 +20,7 @@ class TicketMessageUpsertRequest extends FormRequest
     {
         return [
             'message' =>  ['required', 'string'],
+            'attachments.*' => array_merge(['sometimes'], config('ticket.attachment_rules')),
         ];
     }
 }
