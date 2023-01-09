@@ -31,7 +31,7 @@ class TicketMessageController extends Controller
         return new TicketMessageResource($ticketMessages);
     }
 
-    public function store(Ticket $ticket, TicketMessageUpsertRequest $request)
+    public function store(Ticket $ticket, TicketMessageUpsertRequest $request, IFile $file)
     {
         $me = auth()->user()->id;
 
@@ -43,13 +43,17 @@ class TicketMessageController extends Controller
         $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
         $ticket->save();
 
+        $this->saveTicketmessageFiles($request, $message, $file);
+
         return new TicketMessageResource($message);
     }
 
-    public function update(Ticket $ticket, TicketMessage $message, TicketMessageUpsertRequest $request)
+    public function update(Ticket $ticket, TicketMessage $message, TicketMessageUpsertRequest $request, IFile $file)
     {
         $message->fill($request->validated());
         $message->save();
+
+        $this->saveTicketmessageFiles($request, $message, $file);
 
         return new TicketMessageResource($message);
     }
