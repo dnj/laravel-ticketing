@@ -3,8 +3,10 @@
 namespace dnj\Ticket;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Console\Scheduling\Schedule;
 use dnj\Filesystem\Contracts\IFile;
 use dnj\Filesystem\Local\File;
+use dnj\Ticket\Console\RemoveTicketAttachment;
 
 class TicketServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,15 @@ class TicketServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../config/ticket.php' => config_path('ticket.php'),
             ], 'config');
+
+            $this->commands([
+                RemoveTicketAttachment::class,
+            ]);
+
+            $this->app->booted(function () {
+                $schedule = $this->app->make(Schedule::class);
+                $schedule->command('ticketattachment:remove')->daily();
+            });
         }
 
         $this->app->bind(IFile::class, function ($app) {
