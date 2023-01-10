@@ -1,6 +1,6 @@
 <?php
 
-namespace dnj\Ticket\Requests;
+namespace dnj\Ticket\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

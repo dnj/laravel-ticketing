@@ -1,6 +1,6 @@
 <?php
 
-namespace dnj\Ticket\Resources;
+namespace dnj\Ticket\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 

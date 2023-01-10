@@ -1,10 +1,10 @@
 <?php
 
-namespace dnj\Ticket\Controllers;
+namespace dnj\Ticket\Http\Controllers;
 
 use dnj\Ticket\FileHelpers;
-use dnj\Ticket\Requests\TicketAttachmentRequest;
-use dnj\Ticket\Resources\TicketAttachmentResource;
+use dnj\Ticket\Http\Requests\TicketAttachmentRequest;
+use dnj\Ticket\Http\Resources\TicketAttachmentResource;
 use dnj\Ticket\Models\TicketAttachment;
 use dnj\Filesystem\Contracts\IFile;
 use Illuminate\Routing\Controller;
