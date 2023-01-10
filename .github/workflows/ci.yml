@@ -8,12 +8,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - uses: php-actions/composer@v6
       with:
         php_version: "8.1"
+
     - uses: php-actions/phpunit@v3
       with:
-        php_extensions: xdebug
+        php_extensions: bcmath xdebug gd mbstring imagick
         php_version: "8.1"
         args: --coverage-clover=coverage/clover-coverage.xml
       env:
@@ -21,6 +23,7 @@ jobs:
 
     - name: Code Coverage Check
       uses: themichaelhall/check-code-coverage@v2
+      if: github.event_name == 'pull_request'
       with:
           report: coverage/clover-coverage.xml
           required-percentage: 80
