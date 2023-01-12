@@ -28,7 +28,7 @@ class TicketStoreRequest extends FormRequest
             'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel(), 'id')],
             'message' => ['required'],
             'attachments.*' => [
-                'sometimes', 'required', new AttachmentValidation
+                'sometimes', 'required', new AttachmentValidation(),
             ],
         ];
     }

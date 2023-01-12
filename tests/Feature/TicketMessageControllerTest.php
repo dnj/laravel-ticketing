@@ -6,14 +6,12 @@ use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Models\TicketMessage;
 use dnj\Ticket\Tests\Models\User;
 use dnj\Ticket\Tests\TestCase;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class TicketMessageControllerTest extends TestCase
 {
     use RefreshDatabase;
-
 
     public function testShowList(): void
     {
@@ -49,29 +47,27 @@ class TicketMessageControllerTest extends TestCase
         $this->postJson(route('tickets.messages.store', $params))
             ->assertStatus(422)
             ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.message"]);
+                $json->hasAll(['message', 'errors', 'errors.message']);
             });
 
         $this->postJson(route('tickets.messages.store', $params), $data)
             ->assertStatus(201)
             ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["data", "data.id", "data.message", "data.user"]);
+                $json->hasAll(['data', 'data.id', 'data.message', 'data.user']);
                 $json->etc();
             });
     }
 
-
     public function testUpdate(): void
     {
-
         $user = User::factory()->create();
         $this->actingAs($user);
 
         $ticket = Ticket::factory()->create();
-        $ticketMessage =  TicketMessage::factory()->withTicket($ticket)->create();
+        $ticketMessage = TicketMessage::factory()->withTicket($ticket)->create();
 
         $data = [
-            'message' => 'Update ticket message'
+            'message' => 'Update ticket message',
         ];
 
         $params = [
@@ -82,14 +78,14 @@ class TicketMessageControllerTest extends TestCase
         $this->putJson(route('tickets.messages.update', $params))
             ->assertStatus(422)
             ->assertJson(function (AssertableJson $json) {
-                $json->hasAll(["message", "errors", "errors.message"]);
+                $json->hasAll(['message', 'errors', 'errors.message']);
             });
 
         $this->putJson(route('tickets.messages.update', $params), $data)
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($data) {
-                $json->hasAll(["data", "data.id", "data.user"]);
-                $json->where('data.message', $data["message"]);
+                $json->hasAll(['data', 'data.id', 'data.user']);
+                $json->where('data.message', $data['message']);
                 $json->etc();
             });
     }
@@ -100,7 +96,7 @@ class TicketMessageControllerTest extends TestCase
         $this->actingAs($user);
 
         $ticket = Ticket::factory()->create();
-        $ticketMessage =  TicketMessage::factory()->withTicket($ticket)->create();
+        $ticketMessage = TicketMessage::factory()->withTicket($ticket)->create();
 
         $params = [
             'ticket' => $ticket->id,

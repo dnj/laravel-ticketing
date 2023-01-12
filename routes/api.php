@@ -1,9 +1,9 @@
 <?php
 
 use dnj\Ticket\Http\Controllers\DepartmentController;
+use dnj\Ticket\Http\Controllers\TicketAttachmentController;
 use dnj\Ticket\Http\Controllers\TicketController;
 use dnj\Ticket\Http\Controllers\TicketMessageController;
-use dnj\Ticket\Http\Controllers\TicketAttachmentController;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 

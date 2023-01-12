@@ -2,13 +2,13 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
-use dnj\Ticket\FileHelpers;
 use dnj\Ticket\Enums\TicketStatus;
+use dnj\Ticket\FileHelpers;
 use dnj\Ticket\Http\Requests\TicketMessageUpsertRequest;
 use dnj\Ticket\Http\Resources\TicketMessageResource;
 use dnj\Ticket\Models\Ticket;
-use dnj\Ticket\Models\TicketMessage;
 use dnj\Ticket\Models\TicketAttachment;
+use dnj\Ticket\Models\TicketMessage;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -68,24 +68,22 @@ class TicketMessageController extends Controller
     {
         // if request has file attachment, That will be store and attached to message
         if ($request->hasfile('attachments')) {
-
             $attachmentList = [];
 
             foreach ($request->file('attachments') as $attachment) {
-
                 $file = $this->saveFile($attachment);
 
-                $attach =  TicketAttachment::create([
+                $attach = TicketAttachment::create([
                     'name' => $attachment->getClientOriginalName(),
                     'message_id' => $message->id,
                     'file' => $file,
                     'mime' => $attachment->getClientMimeType(),
-                    'size' => $attachment->getSize()
+                    'size' => $attachment->getSize(),
                 ]);
 
                 array_push($attachmentList, $attach);
             }
-        } else if ($request->has('attachments') && is_array($request->input('attachments'))) {
+        } elseif ($request->has('attachments') && is_array($request->input('attachments'))) {
             TicketAttachment::whereIn('id', $request->input('attachments'))->update(['message_id' => $message->id]);
         }
     }
