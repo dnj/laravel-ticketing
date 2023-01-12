@@ -28,8 +28,6 @@ class TicketAttachmentFactory extends Factory
 
     public function createFile()
     {
-        $file = config('ticket.attachment_root')->file('new');
-
-        return $this->saveFile(UploadedFile::fake()->image('avatar.jpg'), '.jpg', $file);
+        return $this->saveFile(UploadedFile::fake()->image('avatar.jpg'));
     }
 }

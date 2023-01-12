@@ -7,8 +7,9 @@ use Illuminate\Http\UploadedFile;
 
 trait FileHelpers
 {
-    protected function saveFile(UploadedFile $attachFile, string $extension): IFile
+    protected function saveFile(UploadedFile $attachFile): IFile
     {
+        $extension = $attachFile->extension();
         $file = config('ticket.attachment_root')->file('new');
         $tmpFile = config('ticket.attachment_root')->file('tmp');
 

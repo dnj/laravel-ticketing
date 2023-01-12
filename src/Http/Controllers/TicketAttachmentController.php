@@ -19,7 +19,7 @@ class TicketAttachmentController extends Controller
 
         if ($request->hasfile('attachments')) {
             foreach ($request->file('attachments') as $attachment) {
-                $file = $this->saveFile($attachment, $attachment->extension());
+                $file = $this->saveFile($attachment);
 
                 $attach = TicketAttachment::create([
                     'name' => $attachment->getClientOriginalName(),
