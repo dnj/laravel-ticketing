@@ -9,7 +9,6 @@ use dnj\Ticket\Http\Resources\TicketMessageResource;
 use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Models\TicketMessage;
 use dnj\Ticket\Models\TicketAttachment;
-use dnj\Filesystem\Contracts\IFile;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -31,7 +30,7 @@ class TicketMessageController extends Controller
         return new TicketMessageResource($ticketMessages);
     }
 
-    public function store(Ticket $ticket, TicketMessageUpsertRequest $request, IFile $file)
+    public function store(Ticket $ticket, TicketMessageUpsertRequest $request)
     {
         $me = auth()->user()->id;
 
@@ -43,17 +42,17 @@ class TicketMessageController extends Controller
         $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
         $ticket->save();
 
-        $this->saveTicketmessageFiles($request, $message, $file);
+        $this->saveTicketmessageFiles($request, $message);
 
         return new TicketMessageResource($message);
     }
 
-    public function update(Ticket $ticket, TicketMessage $message, TicketMessageUpsertRequest $request, IFile $file)
+    public function update(Ticket $ticket, TicketMessage $message, TicketMessageUpsertRequest $request)
     {
         $message->fill($request->validated());
         $message->save();
 
-        $this->saveTicketmessageFiles($request, $message, $file);
+        $this->saveTicketmessageFiles($request, $message);
 
         return new TicketMessageResource($message);
     }
@@ -65,28 +64,26 @@ class TicketMessageController extends Controller
         return response()->noContent();
     }
 
-    private function saveTicketmessageFiles(Request $request, TicketMessage $message, IFile $file)
+    private function saveTicketmessageFiles(Request $request, TicketMessage $message)
     {
         // if request has file attachment, That will be store and attached to message
         if ($request->hasfile('attachments')) {
 
             $attachmentList = [];
-            $baseDirectory = $file->directory;
 
             foreach ($request->file('attachments') as $attachment) {
 
-                $this->saveFile($attachment->path(), $attachment->extension(), $file);
+                $file = $this->saveFile($attachment);
 
                 $attach =  TicketAttachment::create([
                     'name' => $attachment->getClientOriginalName(),
                     'message_id' => $message->id,
-                    'file' => $file->serialize(),
+                    'file' => $file,
                     'mime' => $attachment->getClientMimeType(),
                     'size' => $attachment->getSize()
                 ]);
 
                 array_push($attachmentList, $attach);
-                $file->directory = $baseDirectory;
             }
         } else if ($request->has('attachments') && is_array($request->input('attachments'))) {
             TicketAttachment::whereIn('id', $request->input('attachments'))->update(['message_id' => $message->id]);
