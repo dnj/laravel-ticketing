@@ -2,37 +2,33 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
+use dnj\Filesystem\Tmp\File;
 use dnj\Ticket\FileHelpers;
 use dnj\Ticket\Http\Requests\TicketAttachmentRequest;
 use dnj\Ticket\Http\Resources\TicketAttachmentResource;
 use dnj\Ticket\Models\TicketAttachment;
-use dnj\Filesystem\Contracts\IFile;
 use Illuminate\Routing\Controller;
 
 class TicketAttachmentController extends Controller
 {
     use FileHelpers;
 
-    public function store(TicketAttachmentRequest $request, IFile $file)
+    public function store(TicketAttachmentRequest $request)
     {
-
         $attachmentList = [];
-        $baseDirectory = $file->directory;
+
         if ($request->hasfile('attachments')) {
-
             foreach ($request->file('attachments') as $attachment) {
+                $file = $this->saveFile($attachment, $attachment->extension());
 
-                $this->saveFile($attachment->path(), $attachment->extension(), $file);
-
-                $attach =  TicketAttachment::create([
+                $attach = TicketAttachment::create([
                     'name' => $attachment->getClientOriginalName(),
-                    'file' => $file->serialize(),
+                    'file' => $file,
                     'mime' => $attachment->getClientMimeType(),
-                    'size' => $attachment->getSize()
+                    'size' => $attachment->getSize(),
                 ]);
 
                 array_push($attachmentList, $attach);
-                $file->directory = $baseDirectory;
             }
         }
 
@@ -41,17 +37,19 @@ class TicketAttachmentController extends Controller
 
     public function show(TicketAttachment $ticketAttachment)
     {
-        // 
+        $localFile = File::insureLocal($ticketAttachment->file);
+        $downloadLink = $localFile->directory.'/'.$localFile->basename;
+
+        return response()->download($downloadLink);
     }
 
-    public function destroy(TicketAttachment $ticketAttachment, IFile $file)
+    public function destroy(TicketAttachment $ticketAttachment)
     {
-        $attachFile = $ticketAttachment->file;
-        if (TicketAttachment::where('file', $attachFile)->count() <= 1) {
-            $file->unserialize($attachFile);
-            $this->deleteFile($file);
+        if (TicketAttachment::where('file', $ticketAttachment->file->serialize())->count() <= 1) {
+            $this->deleteFile($ticketAttachment->file);
         }
         $ticketAttachment->delete();
+
         return response()->noContent();
     }
 }

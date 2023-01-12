@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "15541382f7a8aac292615733f009f0a0",
+    "content-hash": "c733b20eaa5b722c1a4021bea9b6db64",
     "packages": [],
     "packages-dev": [
         {
@@ -432,6 +432,45 @@
                 "source": "https://github.com/dnj/local-filesystem/tree/1.0.1"
             },
             "time": "2021-10-05T14:12:50+00:00"
+        },
+        {
+            "name": "dnj/tmp-filesystem",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dnj/tmp-filesystem.git",
+                "reference": "a24cbefbf0bec990f75dd9ef0a46598e150cad87"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dnj/tmp-filesystem/zipball/a24cbefbf0bec990f75dd9ef0a46598e150cad87",
+                "reference": "a24cbefbf0bec990f75dd9ef0a46598e150cad87",
+                "shasum": ""
+            },
+            "require": {
+                "dnj/local-filesystem": "^1.0.0",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.1",
+                "phpstan/phpstan": "^0.12.68",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "dnj\\Filesystem\\Tmp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/dnj/tmp-filesystem/issues",
+                "source": "https://github.com/dnj/tmp-filesystem/tree/1.1.0"
+            },
+            "time": "2022-01-11T11:39:23+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -8363,5 +8402,5 @@
         "php": "^8.1"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

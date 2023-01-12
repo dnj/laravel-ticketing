@@ -6,7 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class TicketAttachmentRequest extends FormRequest
 {
-
     public function authorize()
     {
         return true;
@@ -18,7 +17,7 @@ class TicketAttachmentRequest extends FormRequest
     public function rules()
     {
         return [
-            'attachments.*' => config('ticket.attachment_rules'),
+            'attachments.*' => array_merge(['required', 'file'], config('ticket.attachment_rules')),
         ];
     }
 }

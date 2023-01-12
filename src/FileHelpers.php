@@ -3,13 +3,19 @@
 namespace dnj\Ticket;
 
 use dnj\Filesystem\Contracts\IFile;
+use Illuminate\Http\UploadedFile;
 
 trait FileHelpers
 {
-    protected function saveFile(string $attachFilePath, string $extension, IFile $file): IFile
+    protected function saveFile(UploadedFile $attachFile, string $extension): IFile
     {
+        $file = config('ticket.attachment_root')->file('new');
+        $tmpFile = config('ticket.attachment_root')->file('tmp');
 
-        $md5Hash = @md5_file($attachFilePath);
+        $tmpFile->directory = $attachFile->getPath();
+        $tmpFile->basename = $attachFile->getBasename();
+
+        $md5Hash = $tmpFile->md5(false);
 
         $subDirectories = implode('/', array_slice(str_split($md5Hash, 2), 0, config('ticket.dir_layer_number')));
 
@@ -21,20 +27,14 @@ trait FileHelpers
 
         $file->directory .= "/$subDirectories";
         $file->basename = "$md5Hash.$extension";
-        $file->write(file_get_contents($attachFilePath));
+
+        $tmpFile->copyTo($file);
 
         return $file;
     }
 
-
-    protected function deleteFile(IFile $file): bool
+    protected function deleteFile(IFile $file): void
     {
-        if ($file->exists()) {
-
-            $file->delete();
-            return true;
-        }
-
-        return false;
+        $file->delete();
     }
 }
