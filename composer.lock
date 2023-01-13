@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6302a9cf0cc0248a0ea4d7b8143a9d0a",
+    "content-hash": "c733b20eaa5b722c1a4021bea9b6db64",
     "packages": [],
     "packages-dev": [
         {
@@ -358,6 +358,122 @@
                 "source": "https://github.com/dflydev/dflydev-dot-access-data/tree/v3.0.2"
             },
             "time": "2022-10-27T11:44:00+00:00"
+        },
+        {
+            "name": "dnj/filesystem",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dnj/filesystem.git",
+                "reference": "df263763e9bb37a183ef0f8d7c3c2f00fb1ce5dc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dnj/filesystem/zipball/df263763e9bb37a183ef0f8d7c3c2f00fb1ce5dc",
+                "reference": "df263763e9bb37a183ef0f8d7c3c2f00fb1ce5dc",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.1",
+                "phpstan/phpstan": "^0.12.68",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "dnj\\Filesystem\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/dnj/filesystem/issues",
+                "source": "https://github.com/dnj/filesystem/tree/1.0.0"
+            },
+            "time": "2021-09-26T19:25:16+00:00"
+        },
+        {
+            "name": "dnj/local-filesystem",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dnj/local-filesystem.git",
+                "reference": "50dd3b3a49c132d421d8866868d52f694556765a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dnj/local-filesystem/zipball/50dd3b3a49c132d421d8866868d52f694556765a",
+                "reference": "50dd3b3a49c132d421d8866868d52f694556765a",
+                "shasum": ""
+            },
+            "require": {
+                "dnj/filesystem": "^1.0.0",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.1",
+                "phpstan/phpstan": "^0.12.68",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "dnj\\Filesystem\\Local\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/dnj/local-filesystem/issues",
+                "source": "https://github.com/dnj/local-filesystem/tree/1.0.1"
+            },
+            "time": "2021-10-05T14:12:50+00:00"
+        },
+        {
+            "name": "dnj/tmp-filesystem",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dnj/tmp-filesystem.git",
+                "reference": "a24cbefbf0bec990f75dd9ef0a46598e150cad87"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dnj/tmp-filesystem/zipball/a24cbefbf0bec990f75dd9ef0a46598e150cad87",
+                "reference": "a24cbefbf0bec990f75dd9ef0a46598e150cad87",
+                "shasum": ""
+            },
+            "require": {
+                "dnj/local-filesystem": "^1.0.0",
+                "php": ">=7.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.1",
+                "phpstan/phpstan": "^0.12.68",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "dnj\\Filesystem\\Tmp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/dnj/tmp-filesystem/issues",
+                "source": "https://github.com/dnj/tmp-filesystem/tree/1.1.0"
+            },
+            "time": "2022-01-11T11:39:23+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -1500,63 +1616,6 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2023-01-02T12:20:01+00:00"
-        },
-        {
-            "name": "laravel/legacy-factories",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laravel/legacy-factories.git",
-                "reference": "51363af0881e24fd1c68860ecdbc0cab47350841"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laravel/legacy-factories/zipball/51363af0881e24fd1c68860ecdbc0cab47350841",
-                "reference": "51363af0881e24fd1c68860ecdbc0cab47350841",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/macroable": "^8.0|^9.0",
-                "php": "^7.3|^8.0",
-                "symfony/finder": "^3.4|^4.0|^5.0|^6.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                },
-                "laravel": {
-                    "providers": [
-                        "Illuminate\\Database\\Eloquent\\LegacyFactoryServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "files": [
-                    "helpers.php"
-                ],
-                "psr-4": {
-                    "Illuminate\\Database\\Eloquent\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylor@laravel.com"
-                }
-            ],
-            "description": "The legacy version of the Laravel Eloquent factories.",
-            "homepage": "http://laravel.com",
-            "support": {
-                "issues": "https://github.com/laravel/framework/issues",
-                "source": "https://github.com/laravel/framework"
-            },
-            "time": "2022-12-27T16:42:06+00:00"
         },
         {
             "name": "laravel/serializable-closure",
@@ -8487,10 +8546,8 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "laravel/legacy-factories": 20
-    },
-    "prefer-stable": false,
+    "stability-flags": [],
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
