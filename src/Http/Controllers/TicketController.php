@@ -49,13 +49,11 @@ class TicketController extends Controller
     public function store(TicketStoreRequest $request)
     {
         $me = auth()->user()->id;
-        $client = $request->input('client_id', $me);
-        $status = $client == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
-        $data = $request->safe()
-            ->merge(['status' => $status, 'client_id' => $client])
-            ->toArray();
-
-        $ticket = Ticket::create($data);
+        $ticket = new Ticket();
+        $ticket->client_id = $me;
+        $ticket->fill($request->validated());
+        $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+        $ticket->save();
 
         $message = $ticket->messages()->create([
             'user_id' => $me,
