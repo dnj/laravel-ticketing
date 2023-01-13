@@ -3,10 +3,12 @@
 namespace dnj\Ticket\Test\Fature;
 
 use dnj\Ticket\Models\Ticket;
+use dnj\Ticket\Models\TicketAttachment;
 use dnj\Ticket\Models\TicketMessage;
 use dnj\Ticket\Tests\Models\User;
 use dnj\Ticket\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class TicketMessageControllerTest extends TestCase
@@ -18,7 +20,7 @@ class TicketMessageControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $ticket = Ticket::factory()->create();
+        $ticket = Ticket::factory(['client_id' => $user->id])->create();
         TicketMessage::factory(10)->withTicket($ticket)->create();
 
         $this->getJson(route('tickets.messages.index', ['ticket' => $ticket->id]))
@@ -38,6 +40,7 @@ class TicketMessageControllerTest extends TestCase
 
         $data = [
             'message' => 'This is my test message for ticket.',
+            'attachments' => [UploadedFile::fake()->image('avatar.jpg')],
         ];
 
         $params = [
@@ -63,11 +66,13 @@ class TicketMessageControllerTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
+        $attachments = TicketAttachment::factory()->create();
         $ticket = Ticket::factory()->create();
         $ticketMessage = TicketMessage::factory()->withTicket($ticket)->create();
 
         $data = [
             'message' => 'Update ticket message',
+            'attachments' => [$attachments->id],
         ];
 
         $params = [
