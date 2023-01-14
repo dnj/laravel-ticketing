@@ -8,6 +8,7 @@ use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Tests\Models\User;
 use dnj\Ticket\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class TicketControllerTest extends TestCase
@@ -38,6 +39,7 @@ class TicketControllerTest extends TestCase
             'title' => 'Test Ticket',
             'department_id' => $department->id,
             'message' => 'This is my first message for package.',
+            'attachments' => [UploadedFile::fake()->image('avatar.jpg')],
         ];
 
         $this->postJson(route('tickets.store'), $data)

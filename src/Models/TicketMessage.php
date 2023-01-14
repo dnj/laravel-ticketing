@@ -4,6 +4,7 @@ namespace dnj\Ticket\Models;
 
 use dnj\Ticket\Database\Factories\TicketMessageFactory;
 use dnj\Ticket\ModelHelpers;
+use dnj\UserLogger\Concerns\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,6 +12,7 @@ class TicketMessage extends Model
 {
     use HasFactory;
     use ModelHelpers;
+    use Loggable;
 
     protected static function newFactory()
     {
@@ -33,5 +35,10 @@ class TicketMessage extends Model
     public function ticket()
     {
         return $this->belongsTo(Ticket::class);
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(TicketAttachment::class, 'message_id');
     }
 }

@@ -4,6 +4,7 @@ namespace dnj\Ticket\Http\Requests;
 
 use dnj\Ticket\ModelHelpers;
 use dnj\Ticket\Models\Department;
+use dnj\Ticket\Rules\AttachmentValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,6 +27,9 @@ class TicketStoreRequest extends FormRequest
             'department_id' => ['required', Rule::exists(Department::class, 'id')],
             'client_id' => ['sometimes', 'required', Rule::exists($this->getUserModel(), 'id')],
             'message' => ['required'],
+            'attachments.*' => [
+                'sometimes', 'required', new AttachmentValidation(),
+            ],
         ];
     }
 }

@@ -8,7 +8,7 @@ class TicketMessageResource extends JsonResource
 {
     public function toArray($request)
     {
-        $this->resource->load('user');
+        $this->resource->load('user', 'attachments');
 
         return parent::toArray($request);
     }

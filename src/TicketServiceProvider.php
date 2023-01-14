@@ -11,6 +11,7 @@ class TicketServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__.'/../config/ticket.php', 'ticket');
+        $this->app->register('dnj\UserLogger\ServiceProvider');
     }
 
     public function boot()
