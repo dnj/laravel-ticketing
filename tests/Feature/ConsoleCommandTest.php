@@ -13,9 +13,9 @@ class ConsoleCommandTest extends TestCase
     public function testTicketAttachmentPurge(): void
     {
         TicketAttachment::factory(5)->create();
-        $this->artisan('ticketattachment:purge')->assertSuccessful();
+        $this->artisan('ticket:attachment:purge')->assertSuccessful();
 
-        TicketAttachment::factory(5)->create(['created_at' => now()->subMinutes(12)]);
-        $this->artisan('ticketattachment:purge')->assertSuccessful();
+        $files = TicketAttachment::factory(5)->create(['created_at' => now()->subMinutes(12)]);
+        $this->artisan('ticket:attachment:purge')->assertSuccessful();
     }
 }

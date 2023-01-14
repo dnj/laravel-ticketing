@@ -18,6 +18,7 @@ class TicketMessage extends Model
     }
 
     protected $fillable = ['user_id', 'ticket_id', 'message', 'seen_at'];
+    protected $table = 'tickets_messages';
 
     public function user()
     {

@@ -5,9 +5,9 @@ namespace dnj\Ticket\Console;
 use dnj\Ticket\Models\TicketAttachment;
 use Illuminate\Console\Command;
 
-class RemoveTicketAttachment extends Command
+class PurgeTicketAttachment extends Command
 {
-    protected $signature = 'ticketattachment:purge';
+    protected $signature = 'ticket:attachment:purge';
 
     protected $description = 'Purge the ticket attachments files that not belong to any ticket message';
 
