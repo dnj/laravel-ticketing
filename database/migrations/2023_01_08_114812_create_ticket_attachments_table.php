@@ -7,24 +7,23 @@ use Illuminate\Support\Facades\Schema;
 return new class() extends Migration {
     public function up(): void
     {
-        Schema::create('ticket_attachments', function (Blueprint $table) {
+        Schema::create('tickets_attachments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('message_id')->nullable();
+            $table->foreignId('message_id')
+                ->nullable()
+                ->references('id')
+                ->on('tickets_messages')
+                ->cascadeOnDelete();
             $table->string('name');
             $table->string('file');
             $table->string('mime');
             $table->unsignedInteger('size');
             $table->timestamps();
-
-            $table->foreign('message_id')
-                ->nullable()
-                ->references('id')
-                ->on('ticket_messages')->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('ticket_attachments');
+        Schema::dropIfExists('tickets_attachments');
     }
 };

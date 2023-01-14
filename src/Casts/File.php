@@ -9,10 +9,7 @@ class File implements CastsAttributes
 {
     public function get($model, string $key, $value, array $attributes)
     {
-        $file = config('ticket.attachment_root')->file('new');
-        $file->unserialize($value);
-
-        return $file;
+        return unserialize($value);
     }
 
     public function set($model, string $key, $value, array $attributes)
@@ -21,6 +18,6 @@ class File implements CastsAttributes
             throw new \InvalidArgumentException('The given value is not an File instance.');
         }
 
-        return $value->serialize();
+        return serialize($value);
     }
 }
