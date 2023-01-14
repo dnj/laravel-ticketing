@@ -15,8 +15,6 @@ use Illuminate\Routing\Controller;
 
 class TicketMessageController extends Controller
 {
-    use FileHelpers;
-
     public function __construct(protected ILogger $userLogger)
     {
     }
@@ -95,20 +93,10 @@ class TicketMessageController extends Controller
     {
         // if request has file attachment, That will be store and attached to message
         if ($request->hasfile('attachments')) {
-            $attachmentList = [];
-
-            foreach ($request->file('attachments') as $attachment) {
-                $file = $this->saveFile($attachment);
-
-                $attach = TicketAttachment::create([
-                    'name' => $attachment->getClientOriginalName(),
-                    'message_id' => $message->id,
-                    'file' => $file,
-                    'mime' => $attachment->getClientMimeType(),
-                    'size' => $attachment->getSize(),
-                ]);
-
-                array_push($attachmentList, $attach);
+            foreach ($request->file('attachments') as $file) {
+                $attachment = TicketAttachment::fromUpload($file);
+                $attachment->putFile($file);
+                $attachment->save();
             }
         } elseif ($request->has('attachments') && is_array($request->input('attachments'))) {
             TicketAttachment::whereIn('id', $request->input('attachments'))->update(['message_id' => $message->id]);
