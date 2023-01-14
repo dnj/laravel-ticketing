@@ -25,10 +25,8 @@ class RemoveTicketAttachment extends Command
             $progress = $this->output->createProgressBar($files->count());
             $progress->start();
 
-            $file = config('ticket.attachment_root')->file('new');
-
             foreach ($files as $item) {
-                $file->delete();
+                $item->file->delete();
                 $item->delete();
                 $progress->advance();
             }
