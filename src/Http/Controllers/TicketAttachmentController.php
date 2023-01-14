@@ -3,6 +3,7 @@
 namespace dnj\Ticket\Http\Controllers;
 
 use dnj\Filesystem\Tmp\File;
+use dnj\Ticket\Http\Controllers\Concerns\WorksWithAttachments;
 use dnj\Ticket\Http\Requests\TicketAttachmentRequest;
 use dnj\Ticket\Http\Resources\TicketAttachmentResource;
 use dnj\Ticket\Models\TicketAttachment;
@@ -10,20 +11,11 @@ use Illuminate\Routing\Controller;
 
 class TicketAttachmentController extends Controller
 {
+    use WorksWithAttachments;
+
     public function store(TicketAttachmentRequest $request)
     {
-        $attachments = [];
-
-        if ($request->hasfile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $attach = TicketAttachment::fromUpload($file);
-                $attach->message_id = $request->message_id ?? null;
-                $attach->putFile($file);
-                $attach->save();
-
-                $attachments[] = $attach;
-            }
-        }
+        $attachments = $this->saveAttachments($request);
 
         return new TicketAttachmentResource($attachments);
     }

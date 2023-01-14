@@ -3,11 +3,10 @@
 namespace dnj\Ticket\Http\Controllers;
 
 use dnj\Ticket\Enums\TicketStatus;
-use dnj\Ticket\FileHelpers;
+use dnj\Ticket\Http\Controllers\Concerns\WorksWithAttachments;
 use dnj\Ticket\Http\Requests\TicketMessageUpsertRequest;
 use dnj\Ticket\Http\Resources\TicketMessageResource;
 use dnj\Ticket\Models\Ticket;
-use dnj\Ticket\Models\TicketAttachment;
 use dnj\Ticket\Models\TicketMessage;
 use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\Request;
@@ -15,6 +14,8 @@ use Illuminate\Routing\Controller;
 
 class TicketMessageController extends Controller
 {
+    use WorksWithAttachments;
+
     public function __construct(protected ILogger $userLogger)
     {
     }
@@ -55,7 +56,7 @@ class TicketMessageController extends Controller
         $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
         $ticket->save();
 
-        $this->saveTicketmessageFiles($request, $message);
+        $this->saveAttachments($request, $message->id);
 
         return new TicketMessageResource($message);
     }
@@ -72,7 +73,7 @@ class TicketMessageController extends Controller
             ->withProperties($changes)
             ->log('updated');
 
-        $this->saveTicketmessageFiles($request, $message);
+        $this->saveAttachments($request, $message->id);
 
         return new TicketMessageResource($message);
     }
@@ -87,19 +88,5 @@ class TicketMessageController extends Controller
             ->log('deleted');
 
         return response()->noContent();
-    }
-
-    private function saveTicketmessageFiles(Request $request, TicketMessage $message)
-    {
-        // if request has file attachment, That will be store and attached to message
-        if ($request->hasfile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $attachment = TicketAttachment::fromUpload($file);
-                $attachment->putFile($file);
-                $attachment->save();
-            }
-        } elseif ($request->has('attachments') && is_array($request->input('attachments'))) {
-            TicketAttachment::whereIn('id', $request->input('attachments'))->update(['message_id' => $message->id]);
-        }
     }
 }
