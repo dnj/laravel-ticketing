@@ -10,7 +10,8 @@
     "friendsofphp/php-cs-fixer": "^3.1",
     "orchestra/testbench": "^7.0",
     "dnj/local-filesystem": "^1.0",
-    "dnj/tmp-filesystem": "^1.1"
+    "dnj/tmp-filesystem": "^1.1",
+    "dnj/laravel-user-logger": "dev-master"
   },
   "autoload": {
     "psr-4": {

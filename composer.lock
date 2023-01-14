@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c733b20eaa5b722c1a4021bea9b6db64",
+    "content-hash": "184eccf248ab2eff7310665b1dc39d1c",
     "packages": [],
     "packages-dev": [
         {
@@ -396,6 +396,52 @@
                 "source": "https://github.com/dnj/filesystem/tree/1.0.0"
             },
             "time": "2021-09-26T19:25:16+00:00"
+        },
+        {
+            "name": "dnj/laravel-user-logger",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dnj/laravel-user-logger.git",
+                "reference": "9d3b9018bd57289ea9377c3a1b6779a1b6b5adf5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dnj/laravel-user-logger/zipball/9d3b9018bd57289ea9377c3a1b6779a1b6b5adf5",
+                "reference": "9d3b9018bd57289ea9377c3a1b6779a1b6b5adf5",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.11",
+                "orchestra/testbench": "^7.0",
+                "phpunit/phpunit": "^9"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "dnj\\UserLogger\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "dnj\\UserLogger\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "issues": "https://github.com/dnj/laravel-user-logger/issues",
+                "source": "https://github.com/dnj/laravel-user-logger/tree/master"
+            },
+            "time": "2023-01-03T10:34:23+00:00"
         },
         {
             "name": "dnj/local-filesystem",

@@ -9,12 +9,18 @@ use dnj\Ticket\Http\Requests\TicketUpdateRequest;
 use dnj\Ticket\Http\Resources\TicketResource;
 use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Models\TicketAttachment;
+use dnj\Ticket\Models\TicketMessage;
+use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class TicketController extends Controller
 {
     use FileHelpers;
+
+    public function __construct(protected ILogger $userLogger)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -53,12 +59,29 @@ class TicketController extends Controller
         $ticket->client_id = $me;
         $ticket->fill($request->validated());
         $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+        $changes = $ticket->changesForLog();
         $ticket->save();
 
-        $message = $ticket->messages()->create([
+        $this->userLogger
+            ->withRequest($request)
+            ->performedOn($ticket)
+            ->withProperties($changes)
+            ->log('created');
+
+        $message = new TicketMessage();
+        $message->fill([
+            'ticket_id' => $ticket->id,
             'user_id' => $me,
             'message' => $request->message,
         ]);
+        $changes = $message->changesForLog();
+        $message->save();
+
+        $this->userLogger
+            ->withRequest($request)
+            ->performedOn($message)
+            ->withProperties($changes)
+            ->log('created');
 
         // if request has file attachment, That will be store and attached to message
         if ($request->hasfile('attachments')) {
@@ -92,14 +115,29 @@ class TicketController extends Controller
     public function update(Ticket $ticket, TicketUpdateRequest $request)
     {
         $ticket->fill($request->validated());
+        $changes = $ticket->changesForLog();
         $ticket->save();
+
+        $this->userLogger
+            ->withRequest($request)
+            ->performedOn($ticket)
+            ->withProperties($changes)
+            ->log('updated');
 
         return new TicketResource($ticket);
     }
 
-    public function destroy(Ticket $ticket)
+    public function destroy(Ticket $ticket, Request $request)
     {
+        $changes = $ticket->toArray();
+
         $ticket->delete();
+
+        $this->userLogger
+            ->withRequest($request)
+            ->performedOn($ticket)
+            ->withProperties($changes)
+            ->log('deleted');
 
         return response()->noContent();
     }
