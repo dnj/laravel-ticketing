@@ -81,14 +81,11 @@ class TicketMessageController extends Controller
 
     public function destroy(Ticket $ticket, TicketMessage $message, Request $request)
     {
-        $changes = $ticket->toArray();
-
         $message->delete();
 
         $this->userLogger
             ->withRequest($request)
             ->performedOn($message)
-            ->withProperties($changes)
             ->log('deleted');
 
         return response()->noContent();
