@@ -1,6 +1,7 @@
 <?php
 
 use dnj\Ticket\Http\Controllers\DepartmentController;
+use dnj\Ticket\Http\Controllers\TicketAttachmentController;
 use dnj\Ticket\Http\Controllers\TicketController;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
@@ -9,5 +10,6 @@ Route::middleware([SubstituteBindings::class, 'auth'])->group(function () {
     Route::apiResources([
         'departments' => DepartmentController::class,
         'tickets' => TicketController::class,
+        'ticketAttachments' => TicketAttachmentController::class,
     ]);
 });
