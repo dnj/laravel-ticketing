@@ -2,6 +2,8 @@
 
 namespace dnj\Ticket;
 
+use dnj\Ticket\Console\PurgeTicketAttachment;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 class TicketServiceProvider extends ServiceProvider
@@ -20,6 +22,15 @@ class TicketServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../config/ticket.php' => config_path('ticket.php'),
             ], 'config');
+
+            $this->commands([
+                PurgeTicketAttachment::class,
+            ]);
+
+            $this->app->booted(function () {
+                $schedule = $this->app->make(Schedule::class);
+                $schedule->command('ticket:attachment:purge')->daily();
+            });
         }
     }
 }
