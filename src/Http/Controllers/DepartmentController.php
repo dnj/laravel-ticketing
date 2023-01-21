@@ -2,74 +2,67 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
+use dnj\Ticket\Contracts\IDepartmentManager;
 use dnj\Ticket\Http\Requests\DepartmentUpsertRequest;
 use dnj\Ticket\Http\Resources\DepartmentResource;
-use dnj\Ticket\Models\Department;
 use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class DepartmentController extends Controller
 {
-    public function __construct(protected ILogger $userLogger)
+    public function __construct(protected ILogger $userLogger, private IDepartmentManager $department)
     {
     }
 
     public function index(Request $request)
     {
-        $items = Department::where('title', 'like', '%'.$request->input('title', '').'%')
-            ->orderBy('id')
-            ->cursorPaginate();
+        $items = $this->department->list($request->input('title', ''));
 
         return new DepartmentResource($items);
     }
 
-    public function show(Department $department)
+    public function show(int $id)
     {
+        $department = $this->department->find($id);
+
         return new DepartmentResource($department);
     }
 
     public function store(DepartmentUpsertRequest $request)
     {
-        $department = new Department();
-        $department->fill($request->validated());
-        $changes = $department->changesForLog();
-        $department->save();
+        $response = $this->department->store($request->validated());
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($department)
-            ->withProperties($changes)
+            ->performedOn($response['model'])
+            ->withProperties($response['diff'])
             ->log('created');
 
-        return new DepartmentResource($department);
+        return new DepartmentResource($response['model']);
     }
 
-    public function update(Department $department, DepartmentUpsertRequest $request)
+    public function update(int $id, DepartmentUpsertRequest $request)
     {
-        $department->fill($request->validated());
-        $changes = $department->changesForLog();
-        $department->save();
+        $response = $this->department->update($id, $request->validated());
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($department)
-            ->withProperties($changes)
+            ->performedOn($response['model'])
+            ->withProperties($response['diff'])
             ->log('updated');
 
-        return new DepartmentResource($department);
+        return new DepartmentResource($response['model']);
     }
 
-    public function destroy(Department $department, Request $request)
+    public function destroy(int $id, Request $request)
     {
-        $changes = $department->toArray();
-
-        $department->delete();
+        $response = $this->department->destroy($id);
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($department)
-            ->withProperties($changes)
+            ->performedOn($response['model'])
+            ->withProperties($response['diff'])
             ->log('deleted');
 
         return response()->noContent();
