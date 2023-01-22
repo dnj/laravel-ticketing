@@ -2,18 +2,22 @@
 
 namespace dnj\Ticket\Contracts;
 
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Model;
-
-interface IDepartmentManager
+interface IDepartmentManager extends ICanLog
 {
-    public function list(?string $title): CursorPaginator;
+    /**
+     * @param array{title?:string,created_start_date?:string,created_end_date?:string,updated_start_date?:string,updated_end_date?:string}|null $filters
+     * @return iterable<IDepartment>
+     */
+    public function search(?array $filters): iterable;
 
-    public function store(array $data): array;
+    public function store(string $title): IDepartment;
 
-    public function update(int $id, array $data): array;
+    /**
+     * @param array{title?:string} $changes
+     */
+    public function update(int $id, array $changes): IDepartment;
 
-    public function destroy(int $id): array;
+    public function destroy(int $id): void;
 
-    public function find(int $id): Model;
+    public function find(int $id): ?IDepartment;
 }

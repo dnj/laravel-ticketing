@@ -2,24 +2,31 @@
 
 namespace dnj\Ticket\Contracts;
 
+use dnj\Ticket\Contracts\Exceptions\ITicketTitleHasBeenDisabledException;
 use dnj\Ticket\Enums\TicketStatus;
-use dnj\Ticket\Models\Ticket;
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 
-interface ITicketManager
+interface ITicketManager extends ICanLog
 {
-    public function list(?array $param): CursorPaginator;
+    /**
+     * @param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus[],created_start_date?:DateTimeInterface,created_end_date?:DateTimeInterface,updated_start_date?:DateTimeInterface,updated_end_date?:DateTimeInterface}|null $filters
+     * @return iterable<ITicket>
+     */
+    public function search(?array $filters): iterable;
 
-    public function store(array $data): array;
+    /**
+     * @param array<int|UploadedFile> $files
+     * @throws ITicketTitleHasBeenDisabledException if $title is set but title is disabled
+     */
+    public function store(int $clientId,int $departmentId, string $message, array $files = [], ?string $title = null, ?int $userId = null, ?TicketStatus $status = null): IMessage;
 
-    public function update(int $id, array $data): array;
+    /**
+     * @param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus} $changes
+     */
+    public function update(int $id, array $changes): ITicket;
 
-    public function destroy(int $id): array;
+    public function destroy(int $id): void;
 
-    public function find(int $id): Model;
-
-    public function updateSeenAt(int $ticket_id): void;
-
-    public function ticketStatus(Ticket $ticket): TicketStatus;
+    public function find(int $id): ?ITicket;
+    
 }
