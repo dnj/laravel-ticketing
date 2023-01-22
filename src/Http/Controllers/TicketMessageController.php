@@ -2,12 +2,10 @@
 
 namespace dnj\Ticket\Http\Controllers;
 
-use dnj\Ticket\Enums\TicketStatus;
+use dnj\Ticket\Contracts\ITicketMessageManager;
 use dnj\Ticket\Http\Controllers\Concerns\WorksWithAttachments;
 use dnj\Ticket\Http\Requests\TicketMessageUpsertRequest;
 use dnj\Ticket\Http\Resources\TicketMessageResource;
-use dnj\Ticket\Models\Ticket;
-use dnj\Ticket\Models\TicketMessage;
 use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -16,75 +14,55 @@ class TicketMessageController extends Controller
 {
     use WorksWithAttachments;
 
-    public function __construct(protected ILogger $userLogger)
+    public function __construct(protected ILogger $userLogger, private ITicketMessageManager $message)
     {
     }
 
-    public function index(Ticket $ticket, Request $request)
+    public function index(int $ticket_id, Request $request)
     {
-        $ticketMessages = TicketMessage::query()
-            ->where('ticket_id', $ticket->id)
-            ->orderBy('created_a', $request->input('orderBy', 'asc'))
-            ->cursorPaginate();
-
-        if (auth()->user()->id == $ticket->client_id) {
-            $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
-        }
+        $ticketMessages = $this->message->list($ticket_id, $request->input('orderBy', 'asc'));
 
         return new TicketMessageResource($ticketMessages);
     }
 
-    public function store(Ticket $ticket, TicketMessageUpsertRequest $request)
+    public function store(int $ticket_id, TicketMessageUpsertRequest $request)
     {
-        $me = auth()->user()->id;
-
-        $message = new TicketMessage();
-        $message->fill([
-            'ticket_id' => $ticket->id,
-            'user_id' => $me,
-            'message' => $request->message,
-        ]);
-        $changes = $message->changesForLog();
-        $message->save();
+        $message = $this->message->store($ticket_id, $request->validated());
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($message)
-            ->withProperties($changes)
+            ->performedOn($message['model'])
+            ->withProperties($message['diff'])
             ->log('created');
 
-        $ticket->status = $ticket->client_id == $me ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
-        $ticket->save();
+        $this->saveAttachments($request, $message['model']->id);
 
-        $this->saveAttachments($request, $message->id);
-
-        return new TicketMessageResource($message);
+        return new TicketMessageResource($message['model']);
     }
 
-    public function update(Ticket $ticket, TicketMessage $message, TicketMessageUpsertRequest $request)
+    public function update(int $ticket_id, int $message_id, TicketMessageUpsertRequest $request)
     {
-        $message->fill($request->validated());
-        $changes = $message->changesForLog();
-        $message->save();
+        $message = $this->message->update($message_id, $request->validated());
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($message)
-            ->withProperties($changes)
+            ->performedOn($message['model'])
+            ->withProperties($message['diff'])
             ->log('updated');
 
-        $this->saveAttachments($request, $message->id);
+        $this->saveAttachments($request, $message['model']->id);
 
-        return new TicketMessageResource($message);
+        return new TicketMessageResource($message['model']);
     }
 
-    public function destroy(Ticket $ticket, TicketMessage $message, Request $request)
+    public function destroy(int $ticket_id, int $message_id, Request $request)
     {
-        $message->delete();
+        $message = $this->message->destroy($message_id);
 
         $this->userLogger
             ->withRequest($request)
-            ->performedOn($message)
+            ->performedOn($message['model'])
+            ->withProperties($message['diff'])
             ->log('deleted');
 
         return response()->noContent();
