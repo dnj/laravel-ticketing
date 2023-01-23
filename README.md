@@ -38,6 +38,457 @@ Laravel uses Package Auto-Discovery, so doesn't require you to manually add the 
 ```shell
 php artisan vendor:publish --provider="dnj\Ticket\TicketServiceProvider"
 ```
+#### Config file 
+
+```php
+
+  [
+    // If set True we will migrate and validate title field for ticket.
+    'title' => true,
+
+    // Define your user model class for connect tickets to users. | example: App\User:class
+    'user_model' => null,
+
+    /**
+     * By default, the dnj/local-filesystem package is used to store files.
+     * According to the Directory class, you can specify the main path for storing file
+     */
+    'attachment_root' => new Directory(public_path('ticket')),
+
+    /**
+     * Specifies the number of folders to create for storage based on the file hash
+     * If the hash of your file is 8c7dd922ad47494fc02c388e12c00eac and dir_layer_number is 2, 
+     * the file is saved with this structure :  [path]/8c/7d/8c7dd922ad47494fc02c388e12c00eac.jpg
+     */
+    'dir_layer_number' => 2,
+
+    /**
+     * You can set the validations you want to store files from here.
+     */
+    'attachment_rules' => [
+        'mimes:jpg,png,txt', 'mimetypes:text/plain,image/jpeg,image/png', 'max:1024',
+  ]
+
+```
+
+## Department basic usage:
+
+
+Search department :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\DepartmentManager;
+
+$department = new DepartmentManager();
+
+ /**
+ * @param array{title?:string,created_start_date?:string,created_end_date?:string,updated_start_date?:string,updated_end_date?:string}|null $filters
+ * @return iterable<Department>
+ */
+
+$departments = $department->search(filters:['title'=>'sell']);
+
+```
+
+
+Create new department :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\DepartmentManager;
+
+$department = new DepartmentManager();
+
+ /**
+ * @param  string $title
+ * @return Department
+ */
+
+$department = $department->store(title:'Sell Department');
+
+```
+
+Show department :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\DepartmentManager;
+
+$department = new DepartmentManager();
+
+/**
+ * @param  int $id
+ * @return Department
+ */
+$department = $department->find(id:1);
+```
+
+Update department :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\DepartmentManager;
+
+$department = new DepartmentManager();
+
+/**
+ * @param int $id
+ * @param array{title?:string} $changes
+ * @return Department
+ */
+$department = $department->update(id:1,['title' => 'Support department']);
+```
+
+Delete department :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\DepartmentManager;
+
+$department = new DepartmentManager();
+/**
+ * @param int $id
+ */
+$department->destroy(id:1);
+
+```
+
+## Ticket basic usage:
+
+Search tickets :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketManager;
+
+$ticket = new TicketManager();
+
+/**
+ * @param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus[],created_start_date?:DateTimeInterface,created_end_date?:DateTimeInterface,updated_start_date?:DateTimeInterface,updated_end_date?:DateTimeInterface}|null $filters
+ * @return iterable<ITicket>
+ */
+
+$tickets = $ticket->search(filters:[
+  'client_id'=>1,
+  'status'=>['UNREAD','IN_PROGRESS'],
+  ]);
+
+```
+
+Create new ticket :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketManager;
+use dnj\Ticket\Enums\TicketStatus;
+
+$ticket = new TicketManager();
+
+/**
+ * @param int $clientId
+ * @param int $departmentId
+ * @param string $message
+ * @param array<int|UploadedFile> $files
+ * @param string $title = null
+ * @param ?int $userId = null
+ * @param TicketStatus $status = null
+ * @throws ITicketTitleHasBeenDisabledException if $title is set but title is disabled
+ * @return Ticket
+ */
+$ticket = $ticket->store(
+    clientId:1, 
+    departmentId:1, 
+    message:'First message for ticket',
+    files:[],
+    title:'Ticket subject', 
+    userId: auth()->user()->id,
+    status: null
+  );
+
+```
+
+Show ticket :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketManager;
+
+$ticket = new TicketManager();
+
+/**
+ * @param int id
+ * @return Ticket
+ */
+$ticket = $ticket->find(id:1);
+
+```
+
+Update ticket :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketManager;
+
+$ticket = new TicketManager();
+
+/**
+ * @param int $id
+ *@param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus} $changes
+ * @return Ticket
+ */
+$ticket = $ticket->update(id:1,['client_id'=>3]);
+
+```
+
+Delete ticket :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketManager;
+
+$ticket = new TicketManager();
+
+/**
+ * @param int $id
+ */
+$ticket->destroy(id:1);
+
+```
+
+## Ticket Message basic usage:
+
+Search ticket messages :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketMessageManager;
+
+$ticketMessages = new TicketMessageManager();
+
+/**
+ * @param int $ticketId
+ * @param array{user_id?:int,sort?:string,created_start_date?:DateTimeInterface,created_end_date?:DateTimeInterface,updated_start_date?:DateTimeInterface,updated_end_date?:DateTimeInterface}|null $filters
+* @return iterable<IMessage>
+*/
+
+$ticketMessages = $ticketMessages->search(id:5,filters:[
+  'user_id'=>1,
+  'sort' => 'desc'
+  ]);
+
+```
+
+Create new ticket message :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketMessageManager;
+use dnj\Ticket\Enums\TicketStatus;
+
+$ticketMessage = new TicketMessageManager();
+
+/**
+ * @param int $ticketId
+ * @param string $message
+ * @param array<int|UploadedFile> $files
+ * @param ?int $userId = null
+ * @return TicketMessage
+ */
+$ticketMessage = $ticketMessage->store(
+    ticketId:1,
+    message:'Second message for ticket',
+    files:[113],
+    userId: auth()->user()->id,
+    status: null
+  );
+
+```
+
+Show ticket message :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketMessageManager;
+
+$ticketMessage = new TicketMessageManager();
+
+/**
+ * @param int id
+ * @return TicketMessage
+ */
+$ticketMessage = $ticketMessage->find(id:4);
+
+```
+
+Update ticket message :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketMessageManager;
+
+$ticketMessage = new TicketMessageManager();
+
+/**
+ *@param int $id
+ *@param array{message?:string,userId?:int} $changes
+ *@return TicketMessage
+ */
+$ticketMessage = $ticketMessage->update(id:1,['message'=>'Ticket message has updated']);
+
+```
+
+Delete ticket message :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketMessageManager;
+
+$ticketMesage = new TicketMessageManager();
+
+/**
+ * @param int $id
+ */
+$ticketMesage->destroy(id:1);
+
+```
+
+## Ticket Attachment basic usage:
+
+Search ticket attachment :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+* @param int $messageId
+* @return iterable<IAttachment>
+*/
+
+$ticketAttachment = $ticketAttachment->search(messageId:5);
+
+```
+
+Create new ticket attachment :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+use Illuminate\Http\UploadedFile;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+ * @param UploadedFile $file
+ * @param int $messageId
+ * @return TicketAttachment
+ */
+$ticketAttachment = $ticketAttachment->storeByUpload(
+    file:UploadedFile::fake()->image('avatar.jpg'),
+    messageId:2,
+  );
+
+```
+
+Show ticket attachment :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+ * @param int id
+ * @return TicketAttachment
+ */
+$ticketAttachment = $ticketAttachment->find(id:4);
+
+```
+
+Find orphans ticket attachment :
+***
+
+This method helps you find stray files that are not attached to a message 
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+ * @param int id
+ * @return iterable
+ */
+$ticketAttachment->findOrphans(id:4);
+
+```
+
+Update ticket attachment :
+***
+
+```php
+
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+ *@param int $id
+ *@param array{message_id?:int} $changes
+ *@return TicketMessage
+ */
+$ticketAttachment = $ticketAttachment->update(id:1,message_id:5);
+
+```
+
+Delete ticket attachment :
+***
+
+```php
+<?php
+use dnj\Ticket\Managers\TicketAttachmentManager;
+
+$ticketAttachment = new TicketAttachmentManager();
+
+/**
+ * @param int $id
+ */
+$ticketAttachment->destroy(id:1);
+
+```
 
 ## How to use package API
 
@@ -70,9 +521,9 @@ The MIT License (MIT). Please see [License File][link-license] for more informat
 [ico-version]: https://img.shields.io/packagist/v/dnj/laravel-ticketing.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 [ico-downloads]: https://img.shields.io/packagist/dt/dnj/laravel-ticketing.svg?style=flat-square
-[ico-workflow-test]: https://github.com/dnj/laravel-ticketing/actions/workflows/ci.yaml/badge.svg
+[ico-workflow-test]: https://github.com/dnj/laravel-ticketing/actions/workflows/ci.yml/badge.svg
 
-[link-workflow-test]: https://github.com/dnj/laravel-ticketing/actions/workflows/ci.yaml
+[link-workflow-test]: https://github.com/dnj/laravel-ticketing/actions/workflows/ci.yml
 [link-packagist]: https://packagist.org/packages/dnj/laravel-ticketing
 [link-license]: https://github.com/dnj/laravel-ticketing/blob/master/LICENSE
 [link-downloads]: https://packagist.org/packages/dnj/laravel-ticketing
