@@ -2,14 +2,16 @@
 
 namespace dnj\Ticket\Models;
 
+use dnj\Ticket\Contracts\ITicket;
 use dnj\Ticket\Database\Factories\TicketFactory;
 use dnj\Ticket\Enums\TicketStatus;
+use dnj\Ticket\Exceptions\TicketTitleHasBeenDisabledException;
 use dnj\Ticket\ModelHelpers;
 use dnj\UserLogger\Concerns\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model
+class Ticket extends Model implements ITicket
 {
     use HasFactory;
     use ModelHelpers;
@@ -45,5 +47,34 @@ class Ticket extends Model
     public function messages()
     {
         return $this->hasMany(TicketMessage::class);
+    }
+
+    public static function hasTitle(): bool
+    {
+        return self::isTitleRequire();
+    }
+
+    public function getID(): int
+    {
+        return $this->id;
+    }
+
+    public function getTitle(): string
+    {
+        if (!$this->isTitleRequire()) {
+            throw new TicketTitleHasBeenDisabledException('Ticket title has disabled. check ticket.title config');
+        }
+
+        return $this->title;
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updated_at;
     }
 }

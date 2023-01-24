@@ -25,6 +25,7 @@ class TicketControllerTest extends TestCase
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) {
                 $json->has('data', 10);
+                $json->hasAll(['path', 'next_page_url', 'prev_page_url']);
                 $json->etc();
             });
     }
@@ -45,8 +46,8 @@ class TicketControllerTest extends TestCase
         $this->postJson(route('tickets.store'), $data)
             ->assertStatus(201)
             ->assertJson(function (AssertableJson $json) use ($data) {
-                $json->hasAll(['data', 'data.client', 'data.department']);
-                $json->where('data.department_id', $data['department_id']);
+                $json->hasAll(['ticket_id', 'user_id', 'message']);
+                $json->where('ticket.department_id', $data['department_id']);
                 $json->etc();
             });
     }

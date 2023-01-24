@@ -5,21 +5,20 @@ namespace dnj\Ticket\Http\Controllers;
 use dnj\Ticket\Contracts\IDepartmentManager;
 use dnj\Ticket\Http\Requests\DepartmentUpsertRequest;
 use dnj\Ticket\Http\Resources\DepartmentResource;
-use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class DepartmentController extends Controller
 {
-    public function __construct(protected ILogger $userLogger, private IDepartmentManager $department)
+    public function __construct(private IDepartmentManager $department)
     {
     }
 
     public function index(Request $request)
     {
-        $items = $this->department->list($request->input('title', ''));
+        $departments = $this->department->search($request->all());
 
-        return new DepartmentResource($items);
+        return new DepartmentResource($departments);
     }
 
     public function show(int $id)
@@ -31,39 +30,21 @@ class DepartmentController extends Controller
 
     public function store(DepartmentUpsertRequest $request)
     {
-        $response = $this->department->store($request->validated());
+        $department = $this->department->store($request->input('title'));
 
-        $this->userLogger
-            ->withRequest($request)
-            ->performedOn($response['model'])
-            ->withProperties($response['diff'])
-            ->log('created');
-
-        return new DepartmentResource($response['model']);
+        return new DepartmentResource($department);
     }
 
     public function update(int $id, DepartmentUpsertRequest $request)
     {
-        $response = $this->department->update($id, $request->validated());
+        $department = $this->department->update($id, $request->validated());
 
-        $this->userLogger
-            ->withRequest($request)
-            ->performedOn($response['model'])
-            ->withProperties($response['diff'])
-            ->log('updated');
-
-        return new DepartmentResource($response['model']);
+        return new DepartmentResource($department);
     }
 
     public function destroy(int $id, Request $request)
     {
-        $response = $this->department->destroy($id);
-
-        $this->userLogger
-            ->withRequest($request)
-            ->performedOn($response['model'])
-            ->withProperties($response['diff'])
-            ->log('deleted');
+        $this->department->destroy($id);
 
         return response()->noContent();
     }

@@ -2,50 +2,69 @@
 
 namespace dnj\Ticket\Managers;
 
-use dnj\Ticket\Contracts\ITicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
+use dnj\Ticket\Contracts\IAttachmentManager;
 use dnj\Ticket\Contracts\ITicketManager;
+use dnj\Ticket\Managers\Concerns\WorksWithLog;
 use dnj\Ticket\Models\TicketAttachment;
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Model;
+use dnj\UserLogger\Contracts\ILogger;
 use Illuminate\Http\UploadedFile;
 
-class TicketAttachmentManager implements ITicketAttachmentManager
+class TicketAttachmentManager implements IAttachmentManager
 {
-    public function __construct(private TicketAttachment $attachment, private ITicketManager $ticket)
+    use WorksWithLog;
+
+    private bool $enableLog = true;
+
+    public function __construct(protected ILogger $userLogger, private TicketAttachment $attachment, private ITicketManager $ticket)
     {
     }
 
-    public function list(int $ticket_id, string $sort): CursorPaginator
+    public function search(int $messageId): iterable
     {
         $attachments = $this->attachment->query()
-            ->cursorPaginate();
+            ->where('message_id', $messageId)->get();
 
         return $attachments;
     }
 
-    public function find(int $id): Model
+    public function find(int $id): TicketAttachment
     {
         return $this->attachment->findOrFail($id);
     }
 
-    public function update(array $ids, int $message_id): void
+    public function findOrphans(): iterable
     {
-        $this->attachment->query()->whereIn('id', $ids)
-            ->whereNull('message_id')
-            ->update(['message_id' => $message_id]);
+        return $this->attachment->query()->whereNull('message_id')
+            ->where('created_at', '<=', now()->subMinutes(10))->get();
     }
 
-    public function store(UploadedFile $file, ?int $message_id): Model
+    public function update(int $id, array $changes): TicketAttachment
+    {
+        $attachment = $this->attachment->whereId($id)->whereNull('message_id')->get();
+        $attachment->message_id = $changes['message_id'];
+        $changes = $attachment->changesForLog();
+
+        $this->saveLog(model: $attachment, changes: $changes, log: 'updated');
+
+        return $this->attachment;
+    }
+
+    public function storeByUpload(UploadedFile $file, ?int $message_id): IAttachment
     {
         $attachment = $this->attachment->fromUpload($file);
         $attachment->putFile($file);
         $attachment->message_id = $message_id;
+        $changes = $attachment->changesForLog();
+
+        $this->saveLog(model: $attachment, changes: $changes, log: 'created');
+
         $attachment->save();
 
         return $attachment;
     }
 
-    public function destroy(int $id): array
+    public function destroy(int $id): void
     {
         $attachment = $this->attachment->find($id);
         $changes = $attachment->toArray();
@@ -54,8 +73,18 @@ class TicketAttachmentManager implements ITicketAttachmentManager
             $attachment->file->delete();
         }
 
-        $attachment->delete();
+        $this->saveLog(model: $attachment, changes: $changes, log: 'deleted');
 
-        return ['model' => $attachment, 'diff' => $changes];
+        $attachment->delete();
+    }
+
+    public function setSaveLogs(bool $save): void
+    {
+        $this->enableLog = $save;
+    }
+
+    public function getSaveLogs(): bool
+    {
+        return $this->enableLog;
     }
 }

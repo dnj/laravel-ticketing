@@ -2,13 +2,14 @@
 
 namespace dnj\Ticket\Models;
 
+use dnj\Ticket\Contracts\IMessage;
 use dnj\Ticket\Database\Factories\TicketMessageFactory;
 use dnj\Ticket\ModelHelpers;
 use dnj\UserLogger\Concerns\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TicketMessage extends Model
+class TicketMessage extends Model implements IMessage
 {
     use HasFactory;
     use ModelHelpers;
@@ -40,5 +41,40 @@ class TicketMessage extends Model
     public function attachments()
     {
         return $this->hasMany(TicketAttachment::class, 'message_id');
+    }
+
+    public function getID(): int
+    {
+        return $this->id;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    public function getUserId(): int
+    {
+        return $this->user_id;
+    }
+
+    public function getTicketId(): int
+    {
+        return $this->ticket_id;
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function getSeenAt(): \DateTimeInterface
+    {
+        return $this->seen_at;
     }
 }

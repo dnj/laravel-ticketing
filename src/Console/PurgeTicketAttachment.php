@@ -2,7 +2,7 @@
 
 namespace dnj\Ticket\Console;
 
-use dnj\Ticket\Models\TicketAttachment;
+use dnj\Ticket\Contracts\IAttachmentManager;
 use Illuminate\Console\Command;
 
 class PurgeTicketAttachment extends Command
@@ -15,8 +15,8 @@ class PurgeTicketAttachment extends Command
     {
         $this->line('Start search for find the files...');
 
-        $files = TicketAttachment::whereNull('message_id')
-            ->where('created_at', '<=', now()->subMinutes(10))->get();
+        $attachment = app()->make(IAttachmentManager::class);
+        $files = $attachment->findOrphans();
 
         if ($files->count()) {
             $this->info($files->count().' file found...');

@@ -27,6 +27,7 @@ class TicketMessageControllerTest extends TestCase
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) {
                 $json->has('data', 10);
+                $json->hasAll(['path', 'next_page_url', 'prev_page_url']);
                 $json->etc();
             });
     }

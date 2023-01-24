@@ -3,10 +3,10 @@
 namespace dnj\Ticket;
 
 use dnj\Ticket\Console\PurgeTicketAttachment;
+use dnj\Ticket\Contracts\IAttachmentManager;
 use dnj\Ticket\Contracts\IDepartmentManager;
-use dnj\Ticket\Contracts\ITicketAttachmentManager;
+use dnj\Ticket\Contracts\IMessageManager;
 use dnj\Ticket\Contracts\ITicketManager;
-use dnj\Ticket\Contracts\ITicketMessageManager;
 use dnj\Ticket\Managers\DepartmentManager;
 use dnj\Ticket\Managers\TicketAttachmentManager;
 use dnj\Ticket\Managers\TicketManager;
@@ -22,8 +22,8 @@ class TicketServiceProvider extends ServiceProvider
         $this->app->register('dnj\UserLogger\ServiceProvider');
         $this->app->bind(IDepartmentManager::class, DepartmentManager::class);
         $this->app->bind(ITicketManager::class, TicketManager::class);
-        $this->app->bind(ITicketMessageManager::class, TicketMessageManager::class);
-        $this->app->bind(ITicketAttachmentManager::class, TicketAttachmentManager::class);
+        $this->app->bind(IMessageManager::class, TicketMessageManager::class);
+        $this->app->bind(IAttachmentManager::class, TicketAttachmentManager::class);
     }
 
     public function boot()

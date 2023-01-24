@@ -2,71 +2,113 @@
 
 namespace dnj\Ticket\Managers;
 
+use dnj\Ticket\Contracts\IMessageManager;
 use dnj\Ticket\Contracts\ITicketManager;
-use dnj\Ticket\Contracts\ITicketMessageManager;
+use dnj\Ticket\Managers\Concerns\WorksWithAttachments;
+use dnj\Ticket\Managers\Concerns\WorksWithLog;
 use dnj\Ticket\Models\TicketMessage;
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Model;
+use dnj\UserLogger\Contracts\ILogger;
 
-class TicketMessageManager implements ITicketMessageManager
+class TicketMessageManager implements IMessageManager
 {
-    public function __construct(private TicketMessage $message, private ITicketManager $ticket)
+    use WorksWithAttachments;
+    use WorksWithLog;
+
+    private bool $enableLog = true;
+
+    public function __construct(protected ILogger $userLogger, private TicketMessage $message, private ITicketManager $ticket)
     {
     }
 
-    public function list(int $ticket_id, string $sort): CursorPaginator
+    public function search(int $ticketId, ?array $filters): iterable
     {
-        $ticketMessages = $this->message->query()->where('ticket_id', $ticket_id)
-            ->orderBy('created_at', $sort)
-            ->cursorPaginate();
+        $q = $this->message->query();
+        $q->when(isset($filters['title']), function ($q) use ($filters) {
+            return $q->where('title', 'like', '%'.$filters['title'].'%');
+        })
+            ->when(isset($filters['user_id']), function ($q) use ($filters) {
+                return $q->where('user_id', $filters['user_id']);
+            })
+            ->when(isset($filters['created_start_date']), function ($q) use ($filters) {
+                $created_end_date = isset($filters['created_end_date']) ? $filters['created_end_date'] : now();
 
-        $this->ticket->updateSeenAt($ticket_id);
+                return $q->whereBetween('created_at', [$filters['created_start_date'], $created_end_date]);
+            })
+            ->when(isset($filters['updated_start_date']), function ($q) use ($filters) {
+                $updated_end_date = isset($filters['updated_end_date']) ? $filters['updated_end_date'] : now();
 
-        return $ticketMessages;
+                return $q->whereBetween('updated_at', [$filters['updated_start_date'], $updated_end_date]);
+            })
+            ->when(isset($filters['sort']), function ($q) use ($filters) {
+                return $q->orderBy('updated_at', $filters['sort']);
+            });
+
+        $this->ticket->updateSeenAt($ticketId);
+
+        return $q->cursorPaginate();
     }
 
-    public function find(int $id): Model
+    public function find(int $id): TicketMessage
     {
         return $this->message->findOrFail($id);
     }
 
-    public function update(int $id, array $data): array
+    public function update(int $id, array $changes): TicketMessage
     {
         $message = $this->find($id);
-        $message->fill($data);
+        $message->fill($changes);
         $changes = $message->changesForLog();
+
+        $this->saveLog(model: $message, changes: $changes, log: 'updated');
+
         $message->save();
 
-        return ['model' => $message, 'diff' => $changes];
+        return $message;
     }
 
-    public function store(int $ticket_id, array $data): array
+    public function store(int $ticketId, string $message, array $files = [], ?int $userId = null): TicketMessage
     {
-        $me = auth()->user()->id;
-
-        $ticket = $this->ticket->find($ticket_id);
+        $userId ??= auth()->user()->id;
 
         $this->message->fill([
-            'ticket_id' => $ticket->id,
-            'user_id' => $me,
-            'message' => $data['message'],
+            'ticket_id' => $ticketId,
+            'user_id' => $userId,
+            'message' => $message,
         ]);
 
         $changes = $this->message->changesForLog();
+
+        $this->saveLog(model: $this->message, changes: $changes, log: 'created');
+
         $this->message->save();
 
-        $ticket->status = $this->ticket->ticketStatus($ticket);
-        $ticket->save();
+        $ticket = $this->ticket->find($ticketId);
+        $this->ticket->update($ticketId, [
+            'status' => $this->ticket->ticketStatus($ticket->client_id),
+        ]);
 
-        return ['model' => $this->message, 'diff' => $changes];
+        $this->saveAttachments($files, $this->message->id);
+
+        return $this->message;
     }
 
-    public function destroy(int $id): array
+    public function destroy(int $id): void
     {
         $message = $this->find($id);
         $changes = $message->toArray();
-        $message->delete();
 
-        return ['model' => $message, 'diff' => $changes];
+        $this->saveLog(model: $message, changes: $changes, log: 'deleted');
+
+        $message->delete();
+    }
+
+    public function setSaveLogs(bool $save): void
+    {
+        $this->enableLog = $save;
+    }
+
+    public function getSaveLogs(): bool
+    {
+        return $this->enableLog;
     }
 }

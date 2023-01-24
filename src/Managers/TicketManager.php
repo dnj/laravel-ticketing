@@ -4,80 +4,110 @@ namespace dnj\Ticket\Managers;
 
 use dnj\Ticket\Contracts\ITicketManager;
 use dnj\Ticket\Enums\TicketStatus;
+use dnj\Ticket\Managers\Concerns\WorksWithAttachments;
+use dnj\Ticket\Managers\Concerns\WorksWithLog;
 use dnj\Ticket\Models\Ticket;
-use Illuminate\Contracts\Pagination\CursorPaginator;
-use Illuminate\Database\Eloquent\Model;
+use dnj\Ticket\Models\TicketMessage;
+use dnj\UserLogger\Contracts\ILogger;
 
 class TicketManager implements ITicketManager
 {
-    public function __construct(private Ticket $ticket)
+    use WorksWithAttachments;
+    use WorksWithLog;
+
+    private bool $enableLog = true;
+
+    public function __construct(protected ILogger $userLogger, private Ticket $ticket)
     {
     }
 
-    public function list(?array $params): CursorPaginator
+    public function search(?array $filters): iterable
     {
         $q = $this->ticket->query();
         $q->orderBy('updated_at', 'desc');
-        $q->when(isset($params['title']), function ($q) use ($params) {
-            return $q->where('title', 'like', '%'.$params['title'].'%');
+        $q->when(isset($filters['title']), function ($q) use ($filters) {
+            return $q->where('title', 'like', '%'.$filters['title'].'%');
         })
-            ->when(isset($params['client_id']), function ($q) use ($params) {
-                return $q->where('client_id', $params['client_id']);
+            ->when(isset($filters['client_id']), function ($q) use ($filters) {
+                return $q->where('client_id', $filters['client_id']);
             })
-            ->when(isset($params['department_id']), function ($q) use ($params) {
-                return $q->whereIn('department_id', $params['department_id']);
+            ->when(isset($filters['department_id']), function ($q) use ($filters) {
+                return $q->whereIn('department_id', $filters['department_id']);
             })
-            ->when(isset($params['status']), function ($q) use ($params) {
-                return $q->whereIn('status', $params['status']);
+            ->when(isset($filters['status']), function ($q) use ($filters) {
+                return $q->whereIn('status', $filters['status']);
             })
-            ->when(isset($params['created_start_date']), function ($q) use ($params) {
-                $created_end_date = isset($params['created_end_date']) ? $params['created_end_date'] : now();
+            ->when(isset($filters['created_start_date']), function ($q) use ($filters) {
+                $created_end_date = isset($filters['created_end_date']) ? $filters['created_end_date'] : now();
 
-                return $q->whereBetween('created_at', [$params['created_start_date'], $created_end_date]);
+                return $q->whereBetween('created_at', [$filters['created_start_date'], $created_end_date]);
             })
-            ->when(isset($params['updated_start_date']), function ($q) use ($params) {
-                $updated_end_date = isset($params['updated_end_date']) ? $params['updated_end_date'] : now();
+            ->when(isset($filters['updated_start_date']), function ($q) use ($filters) {
+                $updated_end_date = isset($filters['updated_end_date']) ? $filters['updated_end_date'] : now();
 
-                return $q->whereBetween('updated_at', [$params['updated_start_date'], $updated_end_date]);
+                return $q->whereBetween('updated_at', [$filters['updated_start_date'], $updated_end_date]);
             });
 
         return $q->cursorPaginate();
     }
 
-    public function find(int $id): Model
+    public function find(int $id): Ticket
     {
         return $this->ticket->findOrFail($id);
     }
 
-    public function update(int $id, array $data): array
+    public function update(int $id, array $changes): Ticket
     {
         $ticket = $this->find($id);
-        $ticket->fill($data);
+        $ticket->fill($changes);
         $changes = $ticket->changesForLog();
+
+        $this->saveLog(model: $ticket, changes: $changes, log: 'updated');
+
         $ticket->save();
 
-        return ['model' => $ticket, 'diff' => $changes];
+        return $ticket;
     }
 
-    public function store(array $data): array
+    public function store(int $clientId, int $departmentId, string $message, array $files = [], ?string $title = null, ?int $userId = null, ?TicketStatus $status = null): TicketMessage
     {
-        $me = auth()->user()->id;
-        $this->ticket->client_id = $me;
-        $this->ticket->fill($data);
-        $this->ticket->status = $this->ticketStatus($this->ticket);
+        $this->ticket->fill([
+            'title' => $title,
+            'client_id' => $clientId,
+            'department_id' => $departmentId,
+            'status' => $status ?? $this->ticketStatus($clientId),
+        ]);
         $changes = $this->ticket->changesForLog();
+
+        $this->saveLog(model: $this->ticket, changes: $changes, log: 'created');
+
         $this->ticket->save();
 
-        return ['model' => $this->ticket, 'diff' => $changes];
+        $ticketMessage = new TicketMessage();
+        $ticketMessage->fill([
+            'ticket_id' => $this->ticket->id,
+            'user_id' => $userId,
+            'message' => $message,
+        ]);
+        $changes = $ticketMessage->changesForLog();
+
+        $this->saveLog(model: $ticketMessage, changes: $changes, log: 'created');
+
+        $ticketMessage->save();
+
+        $this->saveAttachments($files, $ticketMessage->id);
+
+        return $ticketMessage;
     }
 
-    public function destroy(int $id): array
+    public function destroy(int $id): void
     {
         $ticket = $this->find($id);
         $changes = $ticket->toArray();
-        $ticket->delete();
 
-        return ['model' => $ticket, 'diff' => $changes];
+        $this->saveLog(model: $ticket, changes: $changes, log: 'deleted');
+
+        $ticket->delete();
     }
 
     public function updateSeenAt(int $ticket_id): void
@@ -89,8 +119,18 @@ class TicketManager implements ITicketManager
         }
     }
 
-    public function ticketStatus(Ticket $ticket): TicketStatus
+    public function ticketStatus(int $client_id): TicketStatus
     {
-        return $ticket->client_id == auth()->user()->id ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+        return $client_id == auth()->user()->id ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+    }
+
+    public function setSaveLogs(bool $save): void
+    {
+        $this->enableLog = $save;
+    }
+
+    public function getSaveLogs(): bool
+    {
+        return $this->enableLog;
     }
 }
