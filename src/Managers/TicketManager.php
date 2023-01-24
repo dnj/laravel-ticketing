@@ -15,10 +15,11 @@ class TicketManager implements ITicketManager
     use WorksWithAttachments;
     use WorksWithLog;
 
-    private bool $enableLog = true;
+    private bool $enableLog;
 
     public function __construct(protected ILogger $userLogger, private Ticket $ticket)
     {
+        $this->setSaveLogs(true);
     }
 
     public function search(?array $filters): iterable

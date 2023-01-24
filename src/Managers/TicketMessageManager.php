@@ -14,10 +14,11 @@ class TicketMessageManager implements IMessageManager
     use WorksWithAttachments;
     use WorksWithLog;
 
-    private bool $enableLog = true;
+    private bool $enableLog;
 
     public function __construct(protected ILogger $userLogger, private TicketMessage $message, private ITicketManager $ticket)
     {
+        $this->setSaveLogs(true);
     }
 
     public function search(int $ticketId, ?array $filters): iterable
@@ -57,6 +58,11 @@ class TicketMessageManager implements IMessageManager
     {
         $message = $this->find($id);
         $message->fill($changes);
+
+        if (isset($changes['attachments'])) {
+            $this->saveAttachments($changes['attachments'], $id);
+        }
+
         $changes = $message->changesForLog();
 
         $this->saveLog(model: $message, changes: $changes, log: 'updated');

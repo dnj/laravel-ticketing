@@ -29,7 +29,7 @@ class TicketController extends Controller
             $request->input('client_id', auth()->user()->id),
             $request->input('department_id'),
             $request->input('message'),
-            $request->input('attachments', []),
+            $request->attachments ?? [],
             $request->input('title', null),
             auth()->user()->id,
             $request->input('status', null),

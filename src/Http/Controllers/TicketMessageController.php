@@ -28,7 +28,7 @@ class TicketMessageController extends Controller
         $message = $this->message->store(
             $ticketId,
             $request->input('message'),
-            $request->input('attachments'),
+            $request->attachments ?? [],
             $request->input('user_id', auth()->user()->id),
         );
 

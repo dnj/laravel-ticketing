@@ -12,10 +12,11 @@ class DepartmentManager implements IDepartmentManager
 {
     use WorksWithLog;
 
-    private bool $enableLog = true;
+    private bool $enableLog;
 
     public function __construct(protected ILogger $userLogger, private Department $department)
     {
+        $this->setSaveLogs(true);
     }
 
     public function search(?array $filters): iterable

@@ -8,7 +8,7 @@ trait WorksWithLog
 {
     protected function saveLog(?Model $model, ?array $changes, string $log): void
     {
-        if ($this->enableLog) {
+        if ($this->getSaveLogs()) {
             $this->userLogger
                 ->withRequest(request())
                 ->performedOn($model)

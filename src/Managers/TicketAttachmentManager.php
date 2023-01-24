@@ -14,10 +14,11 @@ class TicketAttachmentManager implements IAttachmentManager
 {
     use WorksWithLog;
 
-    private bool $enableLog = true;
+    private bool $enableLog;
 
     public function __construct(protected ILogger $userLogger, private TicketAttachment $attachment, private ITicketManager $ticket)
     {
+        $this->setSaveLogs(true);
     }
 
     public function search(int $messageId): iterable
@@ -41,8 +42,9 @@ class TicketAttachmentManager implements IAttachmentManager
 
     public function update(int $id, array $changes): TicketAttachment
     {
-        $attachment = $this->attachment->whereId($id)->whereNull('message_id')->get();
+        $attachment = $this->attachment->whereId($id)->whereNull('message_id')->first();
         $attachment->message_id = $changes['message_id'];
+
         $changes = $attachment->changesForLog();
 
         $this->saveLog(model: $attachment, changes: $changes, log: 'updated');

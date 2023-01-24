@@ -16,7 +16,7 @@ trait WorksWithAttachments
             if (is_file($file)) {
                 $attachments[] = $ticketAttachment->storeByUpload($file, $id);
             } else {
-                $ticketAttachment->update($file, $id);
+                $ticketAttachment->update($file, ['message_id' => $id]);
             }
         }
 
