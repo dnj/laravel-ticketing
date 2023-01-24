@@ -70,6 +70,19 @@ php artisan vendor:publish --provider="dnj\Ticket\TicketServiceProvider"
   ]
 
 ```
+---
+
+ℹ️ **Note**
+> By default, the log is recorded for all CRUD methods. If you want it not to be saved, follow the code below
+
+Example :
+
+```php
+$department = new DepartmentManager();
+$department->setSaveLogs(false);
+$department->store(title:'Sell Department');
+```
+
 
 ## Department basic usage:
 
