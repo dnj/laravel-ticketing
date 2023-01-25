@@ -99,7 +99,7 @@ $department = new DepartmentManager();
 
  /**
  * @param array{title?:string,created_start_date?:string,created_end_date?:string,updated_start_date?:string,updated_end_date?:string}|null $filters
- * @return iterable<Department>
+ * @return iterable<IDepartment>
  */
 
 $departments = $department->search(filters:['title'=>'sell']);
@@ -118,7 +118,7 @@ $department = new DepartmentManager();
 
  /**
  * @param  string $title
- * @return Department
+ * @return IDepartment
  */
 
 $department = $department->store(title:'Sell Department');
@@ -137,7 +137,7 @@ $department = new DepartmentManager();
 
 /**
  * @param  int $id
- * @return Department
+ * @return IDepartment
  */
 $department = $department->find(id:1);
 ```
@@ -155,7 +155,7 @@ $department = new DepartmentManager();
 /**
  * @param int $id
  * @param array{title?:string} $changes
- * @return Department
+ * @return IDepartment
  */
 $department = $department->update(id:1,['title' => 'Support department']);
 ```
@@ -219,7 +219,7 @@ $ticket = new TicketManager();
  * @param ?int $userId = null
  * @param TicketStatus $status = null
  * @throws ITicketTitleHasBeenDisabledException if $title is set but title is disabled
- * @return Ticket
+ * @return IMessage
  */
 $ticket = $ticket->store(
     clientId:1, 
@@ -244,7 +244,7 @@ $ticket = new TicketManager();
 
 /**
  * @param int id
- * @return Ticket
+ * @return ITicket
  */
 $ticket = $ticket->find(id:1);
 
@@ -263,7 +263,7 @@ $ticket = new TicketManager();
 /**
  * @param int $id
  *@param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus} $changes
- * @return Ticket
+ * @return ITicket
  */
 $ticket = $ticket->update(id:1,['client_id'=>3]);
 
@@ -325,7 +325,7 @@ $ticketMessage = new TicketMessageManager();
  * @param string $message
  * @param array<int|UploadedFile> $files
  * @param ?int $userId = null
- * @return TicketMessage
+ * @return IMessage
  */
 $ticketMessage = $ticketMessage->store(
     ticketId:1,
@@ -348,7 +348,7 @@ $ticketMessage = new TicketMessageManager();
 
 /**
  * @param int id
- * @return TicketMessage
+ * @return IMessage
  */
 $ticketMessage = $ticketMessage->find(id:4);
 
@@ -423,7 +423,7 @@ $ticketAttachment = new TicketAttachmentManager();
 /**
  * @param UploadedFile $file
  * @param int $messageId
- * @return TicketAttachment
+ * @return IAttachment
  */
 $ticketAttachment = $ticketAttachment->storeByUpload(
     file:UploadedFile::fake()->image('avatar.jpg'),
@@ -443,7 +443,7 @@ $ticketAttachment = new TicketAttachmentManager();
 
 /**
  * @param int id
- * @return TicketAttachment
+ * @return IAttachment
  */
 $ticketAttachment = $ticketAttachment->find(id:4);
 
@@ -481,7 +481,7 @@ $ticketAttachment = new TicketAttachmentManager();
 /**
  *@param int $id
  *@param array{message_id?:int} $changes
- *@return TicketMessage
+ *@return IAttachment
  */
 $ticketAttachment = $ticketAttachment->update(id:1,message_id:5);
 
