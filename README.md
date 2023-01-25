@@ -73,7 +73,7 @@ php artisan vendor:publish --provider="dnj\Ticket\TicketServiceProvider"
 ---
 
 ℹ️ **Note**
-> By default, the log is recorded for all CRUD methods. If you want it not to be saved, follow the code below
+> By default, the log is recorded for create,update and delete methods. If you want it not to be saved, follow the code below
 
 Example :
 
