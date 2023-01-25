@@ -59,6 +59,16 @@ class Ticket extends Model implements ITicket
         return $this->id;
     }
 
+    public function getClientID(): int
+    {
+        return $this->client_id;
+    }
+
+    public function getDepartmentID(): int
+    {
+        return $this->department_id;
+    }
+
     public function getTitle(): string
     {
         if (!$this->isTitleRequire()) {

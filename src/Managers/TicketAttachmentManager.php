@@ -71,8 +71,8 @@ class TicketAttachmentManager implements IAttachmentManager
         $attachment = $this->attachment->find($id);
         $changes = $attachment->toArray();
 
-        if ($this->attachment->query()->where('file', serialize($attachment->file))->count() <= 1) {
-            $attachment->file->delete();
+        if ($this->attachment->query()->where('file', serialize($attachment->getFile()))->count() <= 1) {
+            $attachment->getFile()->delete();
         }
 
         $this->saveLog(model: $attachment, changes: $changes, log: 'deleted');

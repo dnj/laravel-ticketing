@@ -90,10 +90,10 @@ class TicketMessageManager implements IMessageManager
 
         $ticket = $this->ticket->find($ticketId);
         $this->ticket->update($ticketId, [
-            'status' => $this->ticket->ticketStatus($ticket->client_id),
+            'status' => $this->ticket->ticketStatus($ticket->getClientID()),
         ]);
 
-        $this->saveAttachments($files, $this->message->id);
+        $this->saveAttachments($files, $this->message->getID());
 
         return $this->message;
     }

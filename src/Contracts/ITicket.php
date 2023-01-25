@@ -8,6 +8,10 @@ interface ITicket
 
     public function getID(): int;
 
+    public function getClientID(): int;
+
+    public function getDepartmentID(): int;
+
     /**
      * @throws Exceptions\ITicketTitleHasBeenDisabledException if called this method but titles was disabled
      */

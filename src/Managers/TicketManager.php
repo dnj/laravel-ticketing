@@ -86,7 +86,7 @@ class TicketManager implements ITicketManager
 
         $ticketMessage = new TicketMessage();
         $ticketMessage->fill([
-            'ticket_id' => $this->ticket->id,
+            'ticket_id' => $this->ticket->getID(),
             'user_id' => $userId,
             'message' => $message,
         ]);
@@ -96,7 +96,7 @@ class TicketManager implements ITicketManager
 
         $ticketMessage->save();
 
-        $this->saveAttachments($files, $ticketMessage->id);
+        $this->saveAttachments($files, $ticketMessage->getID());
 
         return $ticketMessage;
     }
@@ -115,7 +115,7 @@ class TicketManager implements ITicketManager
     {
         $ticket = $this->find($ticket_id);
 
-        if (auth()->user()->id == $ticket->client_id) {
+        if (auth()->user()->id == $ticket->getClientID()) {
             $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
         }
     }
