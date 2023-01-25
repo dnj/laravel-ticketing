@@ -14,14 +14,14 @@ class DepartmentManager implements IDepartmentManager
 
     private bool $enableLog;
 
-    public function __construct(protected ILogger $userLogger, private Department $department)
+    public function __construct(protected ILogger $userLogger, private Department $model)
     {
         $this->setSaveLogs(true);
     }
 
     public function search(?array $filters): iterable
     {
-        $q = $this->department->query();
+        $q = $this->model->query();
         $q->orderBy('updated_at', 'desc');
         $q->when(isset($filters['title']), function ($q) use ($filters) {
             return $q->where('title', 'like', '%'.$filters['title'].'%');
@@ -42,42 +42,42 @@ class DepartmentManager implements IDepartmentManager
 
     public function find(int $id): Department
     {
-        return $this->department->findOrFail($id);
+        return $this->model->findOrFail($id);
     }
 
     public function update(int $id, array $data): IDepartment
     {
-        $department = $this->find($id);
-        $department->fill($data);
-        $changes = $department->changesForLog();
+        $this->model = $this->find($id);
+        $this->model->fill($data);
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $department, changes: $changes, log: 'updated');
+        $this->saveLog(changes: $changes, log: 'updated');
 
-        $department->save();
+        $this->model->save();
 
-        return $department;
+        return $this->model;
     }
 
     public function store(string $title): IDepartment
     {
-        $this->department->title = $title;
-        $changes = $this->department->changesForLog();
+        $this->model->title = $title;
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $this->department, changes: $changes, log: 'created');
+        $this->saveLog(changes: $changes, log: 'created');
 
-        $this->department->save();
+        $this->model->save();
 
-        return $this->department;
+        return $this->model;
     }
 
     public function destroy(int $id): void
     {
-        $department = $this->find($id);
-        $changes = $department->toArray();
+        $this->find($id);
+        $changes = $this->model->toArray();
 
-        $this->saveLog(model: $department, changes: $changes, log: 'deleted');
+        $this->saveLog(changes: $changes, log: 'deleted');
 
-        $department->delete();
+        $this->model->delete();
     }
 
     public function setSaveLogs(bool $save): void

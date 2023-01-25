@@ -2,6 +2,7 @@
 
 namespace dnj\Ticket\Managers;
 
+use dnj\Ticket\Contracts\IMessageManager;
 use dnj\Ticket\Contracts\ITicketManager;
 use dnj\Ticket\Enums\TicketStatus;
 use dnj\Ticket\Managers\Concerns\WorksWithAttachments;
@@ -17,14 +18,14 @@ class TicketManager implements ITicketManager
 
     private bool $enableLog;
 
-    public function __construct(protected ILogger $userLogger, private Ticket $ticket)
+    public function __construct(protected ILogger $userLogger, private Ticket $model)
     {
         $this->setSaveLogs(true);
     }
 
     public function search(?array $filters): iterable
     {
-        $q = $this->ticket->query();
+        $q = $this->model->query();
         $q->orderBy('updated_at', 'desc');
         $q->when(isset($filters['title']), function ($q) use ($filters) {
             return $q->where('title', 'like', '%'.$filters['title'].'%');
@@ -54,69 +55,64 @@ class TicketManager implements ITicketManager
 
     public function find(int $id): Ticket
     {
-        return $this->ticket->findOrFail($id);
+        return $this->model->findOrFail($id);
     }
 
     public function update(int $id, array $changes): Ticket
     {
-        $ticket = $this->find($id);
-        $ticket->fill($changes);
-        $changes = $ticket->changesForLog();
+        $this->model = $this->find($id);
+        $this->model->fill($changes);
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $ticket, changes: $changes, log: 'updated');
+        $this->saveLog(changes: $changes, log: 'updated');
 
-        $ticket->save();
+        $this->model->save();
 
-        return $ticket;
+        return $this->model;
     }
 
     public function store(int $clientId, int $departmentId, string $message, array $files = [], ?string $title = null, ?int $userId = null, ?TicketStatus $status = null): TicketMessage
     {
-        $this->ticket->fill([
+        $this->model->fill([
             'title' => $title,
             'client_id' => $clientId,
             'department_id' => $departmentId,
             'status' => $status ?? $this->ticketStatus($clientId),
         ]);
-        $changes = $this->ticket->changesForLog();
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $this->ticket, changes: $changes, log: 'created');
+        $this->saveLog(changes: $changes, log: 'created');
 
-        $this->ticket->save();
+        $this->model->save();
 
-        $ticketMessage = new TicketMessage();
-        $ticketMessage->fill([
-            'ticket_id' => $this->ticket->getID(),
-            'user_id' => $userId,
-            'message' => $message,
-        ]);
-        $changes = $ticketMessage->changesForLog();
+        $ticketMessage = app()->make(IMessageManager::class);
 
-        $this->saveLog(model: $ticketMessage, changes: $changes, log: 'created');
-
-        $ticketMessage->save();
-
-        $this->saveAttachments($files, $ticketMessage->getID());
+        $ticketMessage = $ticketMessage->store(
+            ticketId: $this->model->getID(),
+            message: $message,
+            files: $files,
+            userId: $userId,
+        );
 
         return $ticketMessage;
     }
 
     public function destroy(int $id): void
     {
-        $ticket = $this->find($id);
-        $changes = $ticket->toArray();
+        $this->model = $this->find($id);
+        $changes = $this->model->toArray();
 
-        $this->saveLog(model: $ticket, changes: $changes, log: 'deleted');
+        $this->saveLog(changes: $changes, log: 'deleted');
 
-        $ticket->delete();
+        $this->model->delete();
     }
 
     public function updateSeenAt(int $ticket_id): void
     {
-        $ticket = $this->find($ticket_id);
+        $this->model = $this->find($ticket_id);
 
-        if (auth()->user()->id == $ticket->getClientID()) {
-            $ticket->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
+        if (auth()->user()->id == $this->model->getClientID()) {
+            $this->model->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
         }
     }
 

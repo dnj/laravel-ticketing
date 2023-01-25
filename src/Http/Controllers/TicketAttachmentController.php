@@ -18,8 +18,10 @@ class TicketAttachmentController extends Controller
     {
         $attachments = [];
 
-        foreach ($request->attachments as $file) {
-            $attachments[] = $this->attachment->storeByUpload($file, null);
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $attachments[] = $this->attachment->storeByUpload($file, null);
+            }
         }
 
         return new TicketAttachmentResource($attachments);

@@ -16,14 +16,14 @@ class TicketAttachmentManager implements IAttachmentManager
 
     private bool $enableLog;
 
-    public function __construct(protected ILogger $userLogger, private TicketAttachment $attachment, private ITicketManager $ticket)
+    public function __construct(protected ILogger $userLogger, private TicketAttachment $model, private ITicketManager $ticket)
     {
         $this->setSaveLogs(true);
     }
 
     public function search(int $messageId): iterable
     {
-        $attachments = $this->attachment->query()
+        $attachments = $this->model->query()
             ->where('message_id', $messageId)->get();
 
         return $attachments;
@@ -31,53 +31,53 @@ class TicketAttachmentManager implements IAttachmentManager
 
     public function find(int $id): TicketAttachment
     {
-        return $this->attachment->findOrFail($id);
+        return $this->model->findOrFail($id);
     }
 
     public function findOrphans(): iterable
     {
-        return $this->attachment->query()->whereNull('message_id')
+        return $this->model->query()->whereNull('message_id')
             ->where('created_at', '<=', now()->subMinutes(10))->get();
     }
 
     public function update(int $id, array $changes): TicketAttachment
     {
-        $attachment = $this->attachment->whereId($id)->whereNull('message_id')->first();
-        $attachment->message_id = $changes['message_id'];
+        $this->model = $this->model->whereId($id)->whereNull('message_id')->first();
+        $this->model->message_id = $changes['message_id'];
 
-        $changes = $attachment->changesForLog();
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $attachment, changes: $changes, log: 'updated');
+        $this->saveLog(changes: $changes, log: 'updated');
 
-        return $this->attachment;
+        return $this->model;
     }
 
     public function storeByUpload(UploadedFile $file, ?int $message_id): IAttachment
     {
-        $attachment = $this->attachment->fromUpload($file);
-        $attachment->putFile($file);
-        $attachment->message_id = $message_id;
-        $changes = $attachment->changesForLog();
+        $this->model = $this->model->fromUpload($file);
+        $this->model->putFile($file);
+        $this->model->message_id = $message_id;
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $attachment, changes: $changes, log: 'created');
+        $this->saveLog(changes: $changes, log: 'created');
 
-        $attachment->save();
+        $this->model->save();
 
-        return $attachment;
+        return $this->model;
     }
 
     public function destroy(int $id): void
     {
-        $attachment = $this->attachment->find($id);
-        $changes = $attachment->toArray();
+        $this->model = $this->model->find($id);
+        $changes = $this->model->toArray();
 
-        if ($this->attachment->query()->where('file', serialize($attachment->getFile()))->count() <= 1) {
-            $attachment->getFile()->delete();
+        if ($this->model->query()->where('file', serialize($this->model->getFile()))->count() <= 1) {
+            $this->model->getFile()->delete();
         }
 
-        $this->saveLog(model: $attachment, changes: $changes, log: 'deleted');
+        $this->saveLog(changes: $changes, log: 'deleted');
 
-        $attachment->delete();
+        $this->model->delete();
     }
 
     public function setSaveLogs(bool $save): void

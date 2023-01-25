@@ -16,14 +16,14 @@ class TicketMessageManager implements IMessageManager
 
     private bool $enableLog;
 
-    public function __construct(protected ILogger $userLogger, private TicketMessage $message, private ITicketManager $ticket)
+    public function __construct(protected ILogger $userLogger, private TicketMessage $model, private ITicketManager $ticket)
     {
         $this->setSaveLogs(true);
     }
 
     public function search(int $ticketId, ?array $filters): iterable
     {
-        $q = $this->message->query();
+        $q = $this->model->query();
         $q->when(isset($filters['title']), function ($q) use ($filters) {
             return $q->where('title', 'like', '%'.$filters['title'].'%');
         })
@@ -51,61 +51,61 @@ class TicketMessageManager implements IMessageManager
 
     public function find(int $id): TicketMessage
     {
-        return $this->message->findOrFail($id);
+        return $this->model->findOrFail($id);
     }
 
     public function update(int $id, array $changes): TicketMessage
     {
-        $message = $this->find($id);
-        $message->fill($changes);
+        $this->model = $this->find($id);
+        $this->model->fill($changes);
 
         if (isset($changes['attachments'])) {
             $this->saveAttachments($changes['attachments'], $id);
         }
 
-        $changes = $message->changesForLog();
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $message, changes: $changes, log: 'updated');
+        $this->saveLog(changes: $changes, log: 'updated');
 
-        $message->save();
+        $this->model->save();
 
-        return $message;
+        return $this->model;
     }
 
     public function store(int $ticketId, string $message, array $files = [], ?int $userId = null): TicketMessage
     {
         $userId ??= auth()->user()->id;
 
-        $this->message->fill([
+        $this->model->fill([
             'ticket_id' => $ticketId,
             'user_id' => $userId,
             'message' => $message,
         ]);
 
-        $changes = $this->message->changesForLog();
+        $changes = $this->model->changesForLog();
 
-        $this->saveLog(model: $this->message, changes: $changes, log: 'created');
+        $this->saveLog(changes: $changes, log: 'created');
 
-        $this->message->save();
+        $this->model->save();
 
         $ticket = $this->ticket->find($ticketId);
         $this->ticket->update($ticketId, [
             'status' => $this->ticket->ticketStatus($ticket->getClientID()),
         ]);
 
-        $this->saveAttachments($files, $this->message->getID());
+        $this->saveAttachments($files, $this->model->getID());
 
-        return $this->message;
+        return $this->model;
     }
 
     public function destroy(int $id): void
     {
-        $message = $this->find($id);
-        $changes = $message->toArray();
+        $this->model = $this->find($id);
+        $changes = $this->model->toArray();
 
-        $this->saveLog(model: $message, changes: $changes, log: 'deleted');
+        $this->saveLog(changes: $changes, log: 'deleted');
 
-        $message->delete();
+        $this->model->delete();
     }
 
     public function setSaveLogs(bool $save): void
