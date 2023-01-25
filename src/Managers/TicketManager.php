@@ -62,9 +62,8 @@ class TicketManager implements ITicketManager
     {
         $this->model = $this->find($id);
         $this->model->fill($changes);
-        $changes = $this->model->changesForLog();
 
-        $this->saveLog(changes: $changes, log: 'updated');
+        $this->saveLog(log: 'updated');
 
         $this->model->save();
 
@@ -79,9 +78,8 @@ class TicketManager implements ITicketManager
             'department_id' => $departmentId,
             'status' => $status ?? $this->ticketStatus($clientId),
         ]);
-        $changes = $this->model->changesForLog();
 
-        $this->saveLog(changes: $changes, log: 'created');
+        $this->saveLog(log: 'created');
 
         $this->model->save();
 
@@ -100,9 +98,8 @@ class TicketManager implements ITicketManager
     public function destroy(int $id): void
     {
         $this->model = $this->find($id);
-        $changes = $this->model->toArray();
 
-        $this->saveLog(changes: $changes, log: 'deleted');
+        $this->saveLog(log: 'deleted');
 
         $this->model->delete();
     }

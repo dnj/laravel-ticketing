@@ -45,9 +45,7 @@ class TicketAttachmentManager implements IAttachmentManager
         $this->model = $this->model->whereId($id)->whereNull('message_id')->first();
         $this->model->message_id = $changes['message_id'];
 
-        $changes = $this->model->changesForLog();
-
-        $this->saveLog(changes: $changes, log: 'updated');
+        $this->saveLog(log: 'updated');
 
         return $this->model;
     }
@@ -57,9 +55,8 @@ class TicketAttachmentManager implements IAttachmentManager
         $this->model = $this->model->fromUpload($file);
         $this->model->putFile($file);
         $this->model->message_id = $message_id;
-        $changes = $this->model->changesForLog();
 
-        $this->saveLog(changes: $changes, log: 'created');
+        $this->saveLog(log: 'created');
 
         $this->model->save();
 
@@ -69,13 +66,12 @@ class TicketAttachmentManager implements IAttachmentManager
     public function destroy(int $id): void
     {
         $this->model = $this->model->find($id);
-        $changes = $this->model->toArray();
 
         if ($this->model->query()->where('file', serialize($this->model->getFile()))->count() <= 1) {
             $this->model->getFile()->delete();
         }
 
-        $this->saveLog(changes: $changes, log: 'deleted');
+        $this->saveLog(log: 'deleted');
 
         $this->model->delete();
     }

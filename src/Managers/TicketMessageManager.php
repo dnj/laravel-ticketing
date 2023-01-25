@@ -63,9 +63,7 @@ class TicketMessageManager implements IMessageManager
             $this->saveAttachments($changes['attachments'], $id);
         }
 
-        $changes = $this->model->changesForLog();
-
-        $this->saveLog(changes: $changes, log: 'updated');
+        $this->saveLog(log: 'updated');
 
         $this->model->save();
 
@@ -82,9 +80,7 @@ class TicketMessageManager implements IMessageManager
             'message' => $message,
         ]);
 
-        $changes = $this->model->changesForLog();
-
-        $this->saveLog(changes: $changes, log: 'created');
+        $this->saveLog(log: 'created');
 
         $this->model->save();
 
@@ -101,9 +97,8 @@ class TicketMessageManager implements IMessageManager
     public function destroy(int $id): void
     {
         $this->model = $this->find($id);
-        $changes = $this->model->toArray();
 
-        $this->saveLog(changes: $changes, log: 'deleted');
+        $this->saveLog(log: 'deleted');
 
         $this->model->delete();
     }

@@ -49,9 +49,8 @@ class DepartmentManager implements IDepartmentManager
     {
         $this->model = $this->find($id);
         $this->model->fill($data);
-        $changes = $this->model->changesForLog();
 
-        $this->saveLog(changes: $changes, log: 'updated');
+        $this->saveLog(log: 'updated');
 
         $this->model->save();
 
@@ -61,9 +60,8 @@ class DepartmentManager implements IDepartmentManager
     public function store(string $title): IDepartment
     {
         $this->model->title = $title;
-        $changes = $this->model->changesForLog();
 
-        $this->saveLog(changes: $changes, log: 'created');
+        $this->saveLog(log: 'created');
 
         $this->model->save();
 
@@ -73,9 +71,8 @@ class DepartmentManager implements IDepartmentManager
     public function destroy(int $id): void
     {
         $this->find($id);
-        $changes = $this->model->toArray();
 
-        $this->saveLog(changes: $changes, log: 'deleted');
+        $this->saveLog(log: 'deleted');
 
         $this->model->delete();
     }
