@@ -20,10 +20,10 @@ class TicketServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/ticket.php', 'ticket');
         $this->app->register('dnj\UserLogger\ServiceProvider');
-        $this->app->bind(IDepartmentManager::class, DepartmentManager::class);
-        $this->app->bind(ITicketManager::class, TicketManager::class);
-        $this->app->bind(IMessageManager::class, TicketMessageManager::class);
-        $this->app->bind(IAttachmentManager::class, TicketAttachmentManager::class);
+        $this->app->singleton(IDepartmentManager::class, DepartmentManager::class);
+        $this->app->singleton(ITicketManager::class, TicketManager::class);
+        $this->app->singleton(IMessageManager::class, TicketMessageManager::class);
+        $this->app->singleton(IAttachmentManager::class, TicketAttachmentManager::class);
     }
 
     public function boot()

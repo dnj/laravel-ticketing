@@ -4,86 +4,81 @@ namespace dnj\Ticket\Managers;
 
 use dnj\Ticket\Contracts\IDepartment;
 use dnj\Ticket\Contracts\IDepartmentManager;
-use dnj\Ticket\Managers\Concerns\WorksWithLog;
 use dnj\Ticket\Models\Department;
 use dnj\UserLogger\Contracts\ILogger;
+use Illuminate\Support\LazyCollection;
 
 class DepartmentManager implements IDepartmentManager
 {
-    use WorksWithLog;
-
-    private bool $enableLog;
-
-    public function __construct(protected ILogger $userLogger, private Department $model)
+    public function __construct(protected ILogger $userLogger)
     {
-        $this->setSaveLogs(true);
     }
 
-    public function search(?array $filters): iterable
+    /**
+     * @return LazyCollection<Department>
+     */
+    public function search(?array $filters): LazyCollection
     {
-        $q = $this->model->query();
-        $q->orderBy('updated_at', 'desc');
-        $q->when(isset($filters['title']), function ($q) use ($filters) {
-            return $q->where('title', 'like', '%'.$filters['title'].'%');
-        })
-            ->when(isset($filters['created_start_date']), function ($q) use ($filters) {
-                $created_end_date = isset($filters['created_end_date']) ? $filters['created_end_date'] : now();
-
-                return $q->whereBetween('created_at', [$filters['created_start_date'], $created_end_date]);
-            })
-            ->when(isset($filters['updated_start_date']), function ($q) use ($filters) {
-                $updated_end_date = isset($filters['updated_end_date']) ? $filters['updated_end_date'] : now();
-
-                return $q->whereBetween('updated_at', [$filters['updated_start_date'], $updated_end_date]);
-            });
-
-        return $q->cursorPaginate();
+        return Department::query()
+            ->orderBy('updated_at', 'desc')
+            ->filter($filters)
+            ->lazy();
     }
 
     public function find(int $id): Department
     {
-        return $this->model->findOrFail($id);
+        return Department::query()->findOrFail($id);
     }
 
-    public function update(int $id, array $data): IDepartment
+    public function update(int $id, array $data, bool $userActivityLog = false): Department
     {
-        $this->model = $this->find($id);
-        $this->model->fill($data);
+        $model = Department::query()
+            ->findOrFail($id)
+            ->fill($data);
+        $changes = $model->changesForLog();
+        $model->save();
 
-        $this->saveLog(log: 'updated');
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('updated');
+        }
 
-        $this->model->save();
-
-        return $this->model;
+        return $model;
     }
 
-    public function store(string $title): IDepartment
+    public function store(string $title, bool $userActivityLog = false): IDepartment
     {
-        $this->model->title = $title;
+        $model = new Department([
+            'title' => $title,
+        ]);
+        $changes = $model->changesForLog();
+        $model->save();
 
-        $this->saveLog(log: 'created');
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('created');
+        }
 
-        $this->model->save();
-
-        return $this->model;
+        return $model;
     }
 
-    public function destroy(int $id): void
+    public function destroy(int $id, bool $userActivityLog = false): void
     {
-        $this->find($id);
+        $model = Department::query()->findOrFail($id);
+        $model->delete();
 
-        $this->saveLog(log: 'deleted');
-
-        $this->model->delete();
-    }
-
-    public function setSaveLogs(bool $save): void
-    {
-        $this->enableLog = $save;
-    }
-
-    public function getSaveLogs(): bool
-    {
-        return $this->enableLog;
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($model->toArray())
+                ->log('deleted');
+        }
     }
 }

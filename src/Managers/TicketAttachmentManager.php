@@ -4,85 +4,100 @@ namespace dnj\Ticket\Managers;
 
 use dnj\Ticket\Contracts\IAttachment;
 use dnj\Ticket\Contracts\IAttachmentManager;
-use dnj\Ticket\Contracts\ITicketManager;
-use dnj\Ticket\Managers\Concerns\WorksWithLog;
+use dnj\Ticket\Exceptions\AttachmentAlreadyAsignedException;
 use dnj\Ticket\Models\TicketAttachment;
 use dnj\UserLogger\Contracts\ILogger;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 
 class TicketAttachmentManager implements IAttachmentManager
 {
-    use WorksWithLog;
-
-    private bool $enableLog;
-
-    public function __construct(protected ILogger $userLogger, private TicketAttachment $model, private ITicketManager $ticket)
+    public function __construct(protected ILogger $userLogger)
     {
-        $this->setSaveLogs(true);
     }
 
-    public function search(int $messageId): iterable
+    /**
+     * @return Collection<TicketAttachment>
+     */
+    public function search(int $messageId): Collection
     {
-        $attachments = $this->model->query()
-            ->where('message_id', $messageId)->get();
-
-        return $attachments;
+        return TicketAttachment::query()
+             ->where('message_id', $messageId)
+             ->get();
     }
 
     public function find(int $id): TicketAttachment
     {
-        return $this->model->findOrFail($id);
+        return TicketAttachment::query()->findOrFail($id);
     }
 
-    public function findOrphans(): iterable
+    /**
+     * @return Collection<TicketAttachment>
+     */
+    public function findOrphans(): Collection
     {
-        return $this->model->query()->whereNull('message_id')
-            ->where('created_at', '<=', now()->subMinutes(10))->get();
+        return TicketAttachment::query()
+            ->whereNull('message_id')
+            ->where('created_at', '<=', now()->subMinutes(10))
+            ->get();
     }
 
-    public function update(int $id, array $changes): TicketAttachment
+    public function update(int $id, array $changes, bool $userActivityLog = false): TicketAttachment
     {
-        $this->model = $this->model->whereId($id)->whereNull('message_id')->first();
-        $this->model->message_id = $changes['message_id'];
-
-        $this->saveLog(log: 'updated');
-
-        return $this->model;
-    }
-
-    public function storeByUpload(UploadedFile $file, ?int $message_id): IAttachment
-    {
-        $this->model = $this->model->fromUpload($file);
-        $this->model->putFile($file);
-        $this->model->message_id = $message_id;
-
-        $this->saveLog(log: 'created');
-
-        $this->model->save();
-
-        return $this->model;
-    }
-
-    public function destroy(int $id): void
-    {
-        $this->model = $this->model->find($id);
-
-        if ($this->model->query()->where('file', serialize($this->model->getFile()))->count() <= 1) {
-            $this->model->getFile()->delete();
+        $model = TicketAttachment::query()->findOrFail($id);
+        if (null !== $model->message_id) {
+            throw new AttachmentAlreadyAsignedException($id, $model->message_id);
         }
 
-        $this->saveLog(log: 'deleted');
+        $model->message_id = $changes['message_id'];
+        $changes = $model->changesForLog();
+        $model->save();
 
-        $this->model->delete();
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('updated');
+        }
+
+        return $model;
     }
 
-    public function setSaveLogs(bool $save): void
+    public function storeByUpload(UploadedFile $file, ?int $message_id, bool $userActivityLog = false): IAttachment
     {
-        $this->enableLog = $save;
+        $model = TicketAttachment::fromUpload($file);
+        $model->message_id = $message_id;
+        $model->putFile($file);
+        $changes = $model->changesForLog();
+        $model->save();
+
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('created');
+        }
+
+        return $model;
     }
 
-    public function getSaveLogs(): bool
+    public function destroy(int $id, bool $userActivityLog = false): void
     {
-        return $this->enableLog;
+        $model = TicketAttachment::query()->findOrFail($id);
+
+        if (TicketAttachment::query()->where('file', serialize($model->getFile()))->count() <= 1) {
+            $model->getFile()->delete();
+        }
+        $model->delete();
+
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($model->toArray())
+                ->log('deleted');
+        }
     }
 }

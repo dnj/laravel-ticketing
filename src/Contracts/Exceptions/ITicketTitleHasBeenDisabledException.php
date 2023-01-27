@@ -2,6 +2,6 @@
 
 namespace dnj\Ticket\Contracts\Exceptions;
 
-interface ITicketTitleHasBeenDisabledException
+interface ITicketTitleHasBeenDisabledException extends \Throwable
 {
 }

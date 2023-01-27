@@ -7,32 +7,38 @@ use dnj\Ticket\Http\Requests\TicketStoreRequest;
 use dnj\Ticket\Http\Requests\TicketUpdateRequest;
 use dnj\Ticket\Http\Resources\TicketMessageResource;
 use dnj\Ticket\Http\Resources\TicketResource;
+use dnj\Ticket\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class TicketController extends Controller
 {
-    public function __construct(private ITicketManager $ticket)
+    public function __construct(protected ITicketManager $ticketManager)
     {
     }
 
     public function index(Request $request)
     {
-        $tickets = $this->ticket->search($request->all());
+        $tickets = Ticket::query()
+            ->orderBy('updated_at', 'desc')
+            ->filter($request->all())
+            ->cursorPaginate();
 
         return new TicketResource($tickets);
     }
 
     public function store(TicketStoreRequest $request)
     {
-        $message = $this->ticket->store(
-            $request->input('client_id', auth()->user()->id),
+        $me = auth()->user()->id;
+        $message = $this->ticketManager->store(
+            $request->input('client_id', $me),
             $request->input('department_id'),
             $request->input('message'),
-            $request->attachments ?? [],
+            $request->input('attachments') ?? [],
             $request->input('title', null),
-            auth()->user()->id,
+            $me,
             $request->input('status', null),
+            true
         );
 
         return TicketMessageResource::make($message)->load('ticket');
@@ -40,21 +46,21 @@ class TicketController extends Controller
 
     public function show(int $id)
     {
-        $ticket = $this->ticket->find($id);
+        $ticket = $this->ticketManager->find($id);
 
         return new TicketResource($ticket);
     }
 
     public function update(int $id, TicketUpdateRequest $request)
     {
-        $ticket = $this->ticket->update($id, $request->validated());
+        $ticket = $this->ticketManager->update($id, $request->validated(), true);
 
         return new TicketResource($ticket);
     }
 
-    public function destroy(int $id, Request $request)
+    public function destroy(int $id)
     {
-        $this->ticket->destroy($id);
+        $this->ticketManager->destroy($id, true);
 
         return response()->noContent();
     }

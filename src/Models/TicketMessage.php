@@ -6,6 +6,7 @@ use dnj\Ticket\Contracts\IMessage;
 use dnj\Ticket\Database\Factories\TicketMessageFactory;
 use dnj\Ticket\ModelHelpers;
 use dnj\UserLogger\Concerns\Loggable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -76,5 +77,29 @@ class TicketMessage extends Model implements IMessage
     public function getSeenAt(): \DateTimeInterface
     {
         return $this->seen_at;
+    }
+
+    /**
+     * @param array{user_id?:int,created_start_date?:DateTimeInterface,created_end_date?:DateTimeInterface,updated_start_date?:DateTimeInterface,updated_end_date?:DateTimeInterface}|null $filters
+     */
+    public function scopeFilter(Builder $q, ?array $filters): Builder
+    {
+        if (isset($filters['user_id'])) {
+            $q->where('user_id', $filters['user_id']);
+        }
+        if (isset($filters['created_start_date'])) {
+            $q->where('created_at', '>=', $filters['created_start_date']);
+        }
+        if (isset($filters['created_end_date'])) {
+            $q->where('created_at', '<', $filters['created_end_date']);
+        }
+        if (isset($filters['updated_start_date'])) {
+            $q->where('updated_at', '>=', $filters['updated_start_date']);
+        }
+        if (isset($filters['updated_end_date'])) {
+            $q->where('updated_at', '>=', $filters['updated_end_date']);
+        }
+
+        return $q;
     }
 }

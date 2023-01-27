@@ -10,7 +10,7 @@ use Illuminate\Routing\Controller;
 
 class TicketAttachmentController extends Controller
 {
-    public function __construct(private IAttachmentManager $attachment)
+    public function __construct(protected IAttachmentManager $attachmentManager)
     {
     }
 
@@ -20,7 +20,7 @@ class TicketAttachmentController extends Controller
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $attachments[] = $this->attachment->storeByUpload($file, null);
+                $attachments[] = $this->attachmentManager->storeByUpload($file, $request->input('message_id'), true);
             }
         }
 
@@ -29,15 +29,15 @@ class TicketAttachmentController extends Controller
 
     public function show(int $id)
     {
-        $ticketAttachment = $this->attachment->find($id);
+        $ticketAttachment = $this->attachmentManager->find($id);
         $localFile = File::insureLocal($ticketAttachment->file);
 
         return response()->download($localFile->getPath());
     }
 
-    public function destroy(int $ticketAttachment_id)
+    public function destroy(int $id)
     {
-        $this->attachment->destroy($ticketAttachment_id);
+        $this->attachmentManager->destroy($id, true);
 
         return response()->noContent();
     }

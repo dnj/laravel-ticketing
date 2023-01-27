@@ -5,126 +5,117 @@ namespace dnj\Ticket\Managers;
 use dnj\Ticket\Contracts\IMessageManager;
 use dnj\Ticket\Contracts\ITicketManager;
 use dnj\Ticket\Enums\TicketStatus;
-use dnj\Ticket\Managers\Concerns\WorksWithAttachments;
-use dnj\Ticket\Managers\Concerns\WorksWithLog;
+use dnj\Ticket\Exceptions\UserIdMissingException;
 use dnj\Ticket\Models\Ticket;
 use dnj\Ticket\Models\TicketMessage;
 use dnj\UserLogger\Contracts\ILogger;
+use Illuminate\Support\LazyCollection;
 
 class TicketManager implements ITicketManager
 {
-    use WorksWithAttachments;
-    use WorksWithLog;
-
-    private bool $enableLog;
-
-    public function __construct(protected ILogger $userLogger, private Ticket $model)
-    {
-        $this->setSaveLogs(true);
+    public function __construct(
+        protected ILogger $userLogger,
+        protected IMessageManager $messageManager,
+    ) {
     }
 
-    public function search(?array $filters): iterable
+    /**
+     * @return LazyCollection<Ticket>
+     */
+    public function search(?array $filters): LazyCollection
     {
-        $q = $this->model->query();
-        $q->orderBy('updated_at', 'desc');
-        $q->when(isset($filters['title']), function ($q) use ($filters) {
-            return $q->where('title', 'like', '%'.$filters['title'].'%');
-        })
-            ->when(isset($filters['client_id']), function ($q) use ($filters) {
-                return $q->where('client_id', $filters['client_id']);
-            })
-            ->when(isset($filters['department_id']), function ($q) use ($filters) {
-                return $q->whereIn('department_id', $filters['department_id']);
-            })
-            ->when(isset($filters['status']), function ($q) use ($filters) {
-                return $q->whereIn('status', $filters['status']);
-            })
-            ->when(isset($filters['created_start_date']), function ($q) use ($filters) {
-                $created_end_date = isset($filters['created_end_date']) ? $filters['created_end_date'] : now();
-
-                return $q->whereBetween('created_at', [$filters['created_start_date'], $created_end_date]);
-            })
-            ->when(isset($filters['updated_start_date']), function ($q) use ($filters) {
-                $updated_end_date = isset($filters['updated_end_date']) ? $filters['updated_end_date'] : now();
-
-                return $q->whereBetween('updated_at', [$filters['updated_start_date'], $updated_end_date]);
-            });
-
-        return $q->cursorPaginate();
+        return Ticket::query()
+            ->orderBy('updated_at', 'desc')
+            ->filter($filters)
+            ->lazy();
     }
 
     public function find(int $id): Ticket
     {
-        return $this->model->findOrFail($id);
+        return Ticket::query()->findOrFail($id);
     }
 
-    public function update(int $id, array $changes): Ticket
+    public function update(int $id, array $changes, bool $userActivityLog = false): Ticket
     {
-        $this->model = $this->find($id);
-        $this->model->fill($changes);
+        $model = Ticket::query()->findOrFail($id);
+        $model->fill($changes);
+        $changes = $model->changesForLog();
+        $model->save();
 
-        $this->saveLog(log: 'updated');
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('updated');
+        }
 
-        $this->model->save();
-
-        return $this->model;
+        return $model;
     }
 
-    public function store(int $clientId, int $departmentId, string $message, array $files = [], ?string $title = null, ?int $userId = null, ?TicketStatus $status = null): TicketMessage
+    public function store(int $clientId, int $departmentId, string $message, array $files = [], ?string $title = null, ?int $userId = null, ?TicketStatus $status = null, bool $userActivityLog = false): TicketMessage
     {
-        $this->model->fill([
+        if (null === $userId) {
+            $userId = auth()->user()?->id;
+        }
+        if (null === $userId) {
+            throw new UserIdMissingException();
+        }
+        if (null === $status) {
+            $status = $userId == $clientId ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+        }
+        $model = new Ticket([
             'title' => $title,
             'client_id' => $clientId,
             'department_id' => $departmentId,
-            'status' => $status ?? $this->ticketStatus($clientId),
+            'status' => $status,
         ]);
 
-        $this->saveLog(log: 'created');
+        $changes = $model->changesForLog();
+        $model->save();
 
-        $this->model->save();
+        $message = $this->messageManager->store($model->getID(), $message, $files, $userId);
 
-        $ticketMessage = app()->make(IMessageManager::class);
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($changes)
+                ->log('created');
+        }
 
-        $ticketMessage = $ticketMessage->store(
-            ticketId: $this->model->getID(),
-            message: $message,
-            files: $files,
-            userId: $userId,
-        );
-
-        return $ticketMessage;
+        return $message;
     }
 
-    public function destroy(int $id): void
+    public function destroy(int $id, bool $userActivityLog = false): void
     {
-        $this->model = $this->find($id);
+        $model = Ticket::query()->findOrFail($id);
+        $model->delete();
 
-        $this->saveLog(log: 'deleted');
-
-        $this->model->delete();
-    }
-
-    public function updateSeenAt(int $ticket_id): void
-    {
-        $this->model = $this->find($ticket_id);
-
-        if (auth()->user()->id == $this->model->getClientID()) {
-            $this->model->messages()->whereNull('seen_at')->update(['seen_at' => now()]);
+        if ($userActivityLog) {
+            $this->userLogger
+                ->withRequest(request())
+                ->performedOn($model)
+                ->withProperties($model->toArray())
+                ->log('deleted');
         }
     }
 
-    public function ticketStatus(int $client_id): TicketStatus
+    public function markAsSeenByClient(int $id): void
     {
-        return $client_id == auth()->user()->id ? TicketStatus::UNREAD : TicketStatus::ANSWERED;
+        Ticket::query()
+            ->findOrFail($id)
+            ->messages()
+            ->whereNull('seen_at')
+            ->update(['seen_at' => now()]);
     }
 
-    public function setSaveLogs(bool $save): void
+    public function markAsSeenBySupport(int $id): void
     {
-        $this->enableLog = $save;
-    }
-
-    public function getSaveLogs(): bool
-    {
-        return $this->enableLog;
+        $ticket = Ticket::query()->findOrFail($id);
+        if (TicketStatus::UNREAD === $ticket->status) {
+            $ticket->status = TicketStatus::READ;
+            $ticket->save();
+        }
     }
 }

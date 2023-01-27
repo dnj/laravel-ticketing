@@ -3,48 +3,62 @@
 namespace dnj\Ticket\Http\Controllers;
 
 use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\ITicketManager;
 use dnj\Ticket\Http\Requests\TicketMessageUpsertRequest;
 use dnj\Ticket\Http\Resources\TicketMessageResource;
+use dnj\Ticket\Models\TicketMessage;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class TicketMessageController extends Controller
 {
-    private bool $enableLog = true;
-
-    public function __construct(private IMessageManager $message)
-    {
+    public function __construct(
+        protected ITicketManager $ticketManager,
+        protected IMessageManager $messageManager
+    ) {
     }
 
-    public function index(int $ticket_id, Request $request)
+    public function index(int $ticketId, Request $request)
     {
-        $ticketMessages = $this->message->search($ticket_id, $request->all());
+        $ticket = $this->ticketManager->find($ticketId);
 
-        return new TicketMessageResource($ticketMessages);
+        if ($ticket->getClientID() == auth()->user()->id) {
+            $this->ticketManager->markAsSeenByClient($ticketId);
+        } else {
+            $this->ticketManager->markAsSeenBySupport($ticketId);
+        }
+
+        $messages = TicketMessage::query()
+            ->orderBy('updated_at', 'desc')
+            ->where('ticket_id', $ticketId)
+            ->filter($request->all())
+            ->cursorPaginate();
+
+        return new TicketMessageResource($messages);
     }
 
     public function store(int $ticketId, TicketMessageUpsertRequest $request)
     {
-        $message = $this->message->store(
+        $message = $this->messageManager->store(
             $ticketId,
             $request->input('message'),
-            $request->attachments ?? [],
-            $request->input('user_id', auth()->user()->id),
+            $request->input('attachments') ?? [],
+            true
         );
 
         return new TicketMessageResource($message);
     }
 
-    public function update(int $ticket_id, int $message_id, TicketMessageUpsertRequest $request)
+    public function update(int $ticketId, int $messageId, TicketMessageUpsertRequest $request)
     {
-        $message = $this->message->update($message_id, $request->validated());
+        $message = $this->messageManager->update($messageId, $request->validated(), true);
 
         return new TicketMessageResource($message);
     }
 
-    public function destroy(int $ticket_id, int $message_id)
+    public function destroy(int $ticketId, int $messageId)
     {
-        $this->message->destroy($message_id);
+        $this->messageManager->destroy($messageId, true);
 
         return response()->noContent();
     }
