@@ -12,7 +12,7 @@ This package will help you for manage tickets and support your clients.
    * Department Management 
    * Ticket Management 
    * Ticket Messages Management 
-   * Ticket Attachments Management.
+   * Ticket Attachments Management
 * Latest versions of PHP and PHPUnit and PHPCsFixer
 * Best practices applied:
   * [`README.md`][link-readme] (badges included)
@@ -41,8 +41,9 @@ php artisan vendor:publish --provider="dnj\Ticket\TicketServiceProvider"
 #### Config file 
 
 ```php
+use dnj\Filesystem\Local\Directory;
 
-  [
+return [
     // If set True we will migrate and validate title field for ticket.
     'title' => true,
 
@@ -68,149 +69,167 @@ php artisan vendor:publish --provider="dnj\Ticket\TicketServiceProvider"
     'attachment_rules' => [
         'mimes:jpg,png,txt', 'mimetypes:text/plain,image/jpeg,image/png', 'max:1024',
   ]
+];
 
 ```
+---
 
-## Department basic usage:
+ℹ️ **Note**
+> User activity logs are disabled by default, if you want to save them set `$userActivityLog` to true.
 
-
-Search department :
-***
+Example :
 
 ```php
+use dnj\Ticket\Contracts\IDepartmentManager;
 
-<?php
-use dnj\Ticket\Managers\DepartmentManager;
+$departmentManager = app(IDepartmentManager::class);
+$department = $departmentManager->store(
+  title:'Sell Department',
+  userActivityLog: true
+); // returns an Department model which implementes IDepartment
+```
 
-$department = new DepartmentManager();
+
+## Working With Departments:
+
+Search departments:
+
+```php
+use dnj\Ticket\Contracts\IDepartmentManager;
+use dnj\Ticket\Contracts\IDepartment;
+
+$departmentManager = app(IDepartmentManager::class);
 
  /**
  * @param array{title?:string,created_start_date?:string,created_end_date?:string,updated_start_date?:string,updated_end_date?:string}|null $filters
- * @return iterable<Department>
+ * @var iterable<IDepartment> $departments
  */
-
-$departments = $department->search(filters:['title'=>'sell']);
+$departments = $departmentManager->search(
+  filters:['title' => 'sales']
+);
 
 ```
 
 
-Create new department :
-***
+Create new department:
 
 ```php
-<?php
-use dnj\Ticket\Managers\DepartmentManager;
+use dnj\Ticket\Contracts\IDepartmentManager;
 
-$department = new DepartmentManager();
+$departmentManager = app(IDepartmentManager::class);
 
  /**
- * @param  string $title
- * @return Department
+ * @param string $title
+ * @param bool $userActivityLog = false
+ * @return IDepartment
  */
 
-$department = $department->store(title:'Sell Department');
+$department = $departmentManager->store(title:'Sell Department');
 
 ```
 
-Show department :
-***
+Show department:
 
 ```php
+use dnj\Ticket\Contracts\IDepartmentManager;
 
-<?php
-use dnj\Ticket\Managers\DepartmentManager;
-
-$department = new DepartmentManager();
+$departmentManager = app(IDepartmentManager::class);
 
 /**
  * @param  int $id
- * @return Department
+ * @return IDepartment
  */
-$department = $department->find(id:1);
+$department = $departmentManager->find(id:1);
 ```
 
-Update department :
-***
+Update department:
 
 ```php
+use dnj\Ticket\Contracts\IDepartmentManager;
 
-<?php
-use dnj\Ticket\Managers\DepartmentManager;
-
-$department = new DepartmentManager();
+$departmentManager = app(IDepartmentManager::class);
 
 /**
  * @param int $id
  * @param array{title?:string} $changes
- * @return Department
+ * @param bool $userActivityLog = false
+ * @return IDepartment
  */
-$department = $department->update(id:1,['title' => 'Support department']);
+$department = $departmentManager->update(
+  id:1,
+  changes: ['title' => 'Support']
+);
 ```
 
-Delete department :
-***
+Delete department:
 
 ```php
+use dnj\Ticket\Contracts\IDepartmentManager;
 
-<?php
-use dnj\Ticket\Managers\DepartmentManager;
+$departmentManager = app(IDepartmentManager::class);
 
-$department = new DepartmentManager();
 /**
  * @param int $id
+ * @param bool $userActivityLog = false
+ * @return void
  */
-$department->destroy(id:1);
+$departmentManager->destroy(
+  id:1,
+  userActivityLog: false, // Prevent saving a log for authenticated user
+);
 
 ```
 
-## Ticket basic usage:
-
-Search tickets :
 ***
 
+## Working With Tickets:
+
+Search tickets:
+
 ```php
+use dnj\Ticket\Contracts\ITicketManager;
+use dnj\Ticket\Contracts\ITicket;
+use dnj\Ticket\Enums\TicketStatus;
 
-<?php
-use dnj\Ticket\Managers\TicketManager;
-
-$ticket = new TicketManager();
+$ticketManager = app(ITicketManager::class);
 
 /**
  * @param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus[],created_start_date?:DateTimeInterface,created_end_date?:DateTimeInterface,updated_start_date?:DateTimeInterface,updated_end_date?:DateTimeInterface}|null $filters
+ * @param bool $userActivityLog = false
  * @return iterable<ITicket>
  */
 
-$tickets = $ticket->search(filters:[
-  'client_id'=>1,
-  'status'=>['UNREAD','IN_PROGRESS'],
-  ]);
+$tickets = $ticketManager->search(
+  filters: [
+    'client_id' => 1,
+    'status' => [TicketStatus::UNREAD, TicketStatus::IN_PROGRESS],
+  ]
+);
 
 ```
 
-Create new ticket :
-***
+Create new ticket:
 
 ```php
-<?php
 use dnj\Ticket\Managers\TicketManager;
-use dnj\Ticket\Enums\TicketStatus;
 
-$ticket = new TicketManager();
+$ticketManager = app(ITicketManager::class);
 
 /**
  * @param int $clientId
  * @param int $departmentId
  * @param string $message
  * @param array<int|UploadedFile> $files
- * @param string $title = null
- * @param ?int $userId = null
- * @param TicketStatus $status = null
+ * @param string|null $title = null
+ * @param int|null $userId = null
+ * @param dnj\Ticket\Enums\TicketStatus|null $status = null
+ * @param bool $userActivityLog = false
  * @throws ITicketTitleHasBeenDisabledException if $title is set but title is disabled
- * @return Ticket
+ * @return IMessage
  */
-$ticket = $ticket->store(
-    clientId:1, 
-    departmentId:1, 
+$message = $ticketManager->store(
+    clientId: 1, 
+    departmentId: 1, 
     message:'First message for ticket',
     files:[],
     title:'Ticket subject', 
@@ -220,69 +239,68 @@ $ticket = $ticket->store(
 
 ```
 
-Show ticket :
-***
-
+Show ticket:
 ```php
-<?php
 use dnj\Ticket\Managers\TicketManager;
 
-$ticket = new TicketManager();
+$ticketManager = app(ITicketManager::class);
 
 /**
  * @param int id
- * @return Ticket
+ * @return ITicket
  */
 $ticket = $ticket->find(id:1);
 
 ```
 
 Update ticket :
-***
 
 ```php
-
-<?php
 use dnj\Ticket\Managers\TicketManager;
 
-$ticket = new TicketManager();
+$ticketManager = app(ITicketManager::class);
 
 /**
  * @param int $id
- *@param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus} $changes
- * @return Ticket
+ * @param array{title?:string,client_id?:int,department_id?:int,status?:TicketStatus} $changes
+ * @param bool $userActivityLog = false
+ * @return ITicket
  */
-$ticket = $ticket->update(id:1,['client_id'=>3]);
+$ticket = $ticket->update(
+  id: 1,
+  changes: ['client_id' => 3],
+  userActivityLog: true
+);
 
 ```
 
 Delete ticket :
-***
-
 ```php
-<?php
 use dnj\Ticket\Managers\TicketManager;
 
-$ticket = new TicketManager();
+$ticketManager = app(ITicketManager::class);
 
 /**
  * @param int $id
+ * @param bool $userActivityLog = false
+ * @return void
  */
 $ticket->destroy(id:1);
 
 ```
 
-## Ticket Message basic usage:
+***
+
+## Working With Ticket Messages:
 
 Search ticket messages :
-***
 
 ```php
 
-<?php
-use dnj\Ticket\Managers\TicketMessageManager;
+use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\IMessage;
 
-$ticketMessages = new TicketMessageManager();
+$messageManager = app(IMessageManager::class);
 
 /**
  * @param int $ticketId
@@ -290,10 +308,12 @@ $ticketMessages = new TicketMessageManager();
 * @return iterable<IMessage>
 */
 
-$ticketMessages = $ticketMessages->search(id:5,filters:[
-  'user_id'=>1,
-  'sort' => 'desc'
-  ]);
+$ticketMessages = $messageManager->search(
+  ticketId:5,
+  filters:[
+    'user_id' => 1,
+  ]
+);
 
 ```
 
@@ -301,80 +321,86 @@ Create new ticket message :
 ***
 
 ```php
-<?php
-use dnj\Ticket\Managers\TicketMessageManager;
+use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\IMessage;
 use dnj\Ticket\Enums\TicketStatus;
 
-$ticketMessage = new TicketMessageManager();
+$messageManager = app(IMessageManager::class);
 
 /**
  * @param int $ticketId
  * @param string $message
  * @param array<int|UploadedFile> $files
- * @param ?int $userId = null
- * @return TicketMessage
+ * @param int|null $userId = null
+ * @param bool $userActivityLog = false
+ * @return IMessage
  */
-$ticketMessage = $ticketMessage->store(
-    ticketId:1,
-    message:'Second message for ticket',
-    files:[113],
-    userId: auth()->user()->id,
-    status: null
+$ticketMessage = $messageManager->store(
+    ticketId: 1,
+    message: 'Second message for ticket',
+    files: [113],
+    userId: auth()->user()->id
   );
 
 ```
 
-Show ticket message :
+Show ticket message:
 ***
 
 ```php
-<?php
-use dnj\Ticket\Managers\TicketMessageManager;
+use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\IMessage;
 
-$ticketMessage = new TicketMessageManager();
+$messageManager = app(IMessageManager::class);
 
 /**
  * @param int id
- * @return TicketMessage
+ * @return IMessage
  */
-$ticketMessage = $ticketMessage->find(id:4);
+$ticketMessage = $messageManager->find(id:4);
 
 ```
 
-Update ticket message :
+Update ticket message:
 ***
 
 ```php
 
-<?php
-use dnj\Ticket\Managers\TicketMessageManager;
+use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\IMessage;
 
-$ticketMessage = new TicketMessageManager();
-
-/**
- *@param int $id
- *@param array{message?:string,userId?:int} $changes
- *@return TicketMessage
- */
-$ticketMessage = $ticketMessage->update(id:1,['message'=>'Ticket message has updated']);
-
-```
-
-Delete ticket message :
-***
-
-```php
-<?php
-use dnj\Ticket\Managers\TicketMessageManager;
-
-$ticketMesage = new TicketMessageManager();
+$messageManager = app(IMessageManager::class);
 
 /**
  * @param int $id
+ * @param array{message?:string,userId?:int} $changes
+ * @param bool $userActivityLog = false
+ * @return IMessage
  */
-$ticketMesage->destroy(id:1);
+$ticketMessage = $messageManager->update(
+  id:1,
+  changes: ['message'=>'Ticket message has updated']
+);
 
 ```
+
+Delete ticket message:
+
+```php
+use dnj\Ticket\Contracts\IMessageManager;
+
+$messageManager = app(IMessageManager::class);
+
+/**
+ * @param int $id
+ * @param bool $userActivityLog = false
+ * @return void
+ */
+$messageManager->destroy(id:1);
+
+```
+
+***
 
 ## Ticket Attachment basic usage:
 
@@ -383,114 +409,116 @@ Search ticket attachment :
 
 ```php
 
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
 
-$ticketAttachment = new TicketAttachmentManager();
+$attachmentManager = app(IAttachmentManager::class);
 
 /**
 * @param int $messageId
 * @return iterable<IAttachment>
 */
 
-$ticketAttachment = $ticketAttachment->search(messageId:5);
+$ticketAttachment = $attachmentManager->search(messageId:5);
 
 ```
 
-Create new ticket attachment :
-***
+Create new ticket attachment:
 
 ```php
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
 use Illuminate\Http\UploadedFile;
 
-$ticketAttachment = new TicketAttachmentManager();
+$attachmentManager = app(IAttachmentManager::class);
 
 /**
  * @param UploadedFile $file
  * @param int $messageId
- * @return TicketAttachment
+ * @param bool $userActivityLog = false
+ * @return IAttachment
  */
-$ticketAttachment = $ticketAttachment->storeByUpload(
-    file:UploadedFile::fake()->image('avatar.jpg'),
-    messageId:2,
-  );
+$attachment = $attachmentManager->storeByUpload(
+  file: UploadedFile::fake()->image('avatar.jpg'),
+  messageId: 2,
+);
 
 ```
 
-Show ticket attachment :
-***
+Show the attachment model using it's ID:
 
 ```php
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
 
-$ticketAttachment = new TicketAttachmentManager();
+$attachmentManager = app(IAttachmentManager::class);
 
 /**
- * @param int id
- * @return TicketAttachment
+ * @param int $id
+ * @return IAttachment
  */
-$ticketAttachment = $ticketAttachment->find(id:4);
+$attachment = $attachmentManager->find(id:4);
 
 ```
 
-Find orphans ticket attachment :
-***
+Find orphan attachments:
 
 This method helps you find stray files that are not attached to a message 
 
 ```php
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
 
-$ticketAttachment = new TicketAttachmentManager();
+$attachmentManager = app(IAttachmentManager::class);
 
 /**
  * @param int id
- * @return iterable
+ * @return iterable<IAttachment>
  */
-$ticketAttachment->findOrphans(id:4);
+$orphans = $attachmentManager->findOrphans();
 
 ```
 
-Update ticket attachment :
-***
+Update attachment:
 
 ```php
 
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Contracts\IAttachment;
+use dnj\Ticket\Contracts\IAttachmentManager;
 
-$ticketAttachment = new TicketAttachmentManager();
-
-/**
- *@param int $id
- *@param array{message_id?:int} $changes
- *@return TicketMessage
- */
-$ticketAttachment = $ticketAttachment->update(id:1,message_id:5);
-
-```
-
-Delete ticket attachment :
-***
-
-```php
-<?php
-use dnj\Ticket\Managers\TicketAttachmentManager;
-
-$ticketAttachment = new TicketAttachmentManager();
+$attachmentManager = app(IAttachmentManager::class);
 
 /**
  * @param int $id
+ * @param array{message_id?:int} $changes
+ * @param bool $userActivityLog = false
+ * @throws dnj\Ticket\Contracts\Exceptions\IAttachmentAlreadyAsignedException if you double assign a attachment
+ * @return IAttachment
  */
-$ticketAttachment->destroy(id:1);
+$attachment = $attachmentManager->update(
+  id:1,
+  changes: [message_id => 5]
+);
 
 ```
 
-## How to use package API
+Delete ticket attachment:
+
+```php
+use dnj\Ticket\Contracts\IAttachmentManager;
+
+$attachmentManager = app(IAttachmentManager::class);
+
+/**
+ * @param int $id
+ * @param bool $userActivityLog = false
+ * @return void
+ */
+$attachmentManager->destroy(id:1);
+
+```
+
+## HOWTO use Restful API
 
 A document in YAML format has been prepared for better familiarization and use of package web services. which is placed in the [`docs`][link-docs] folder.
 
@@ -511,7 +539,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 
 ## Security
-If you discover any security-related issues, please email [hi@dnj.co.ir](hi@dnj.co.ir) instead of using the issue tracker.
+If you discover any security-related issues, please email [security@dnj.co.ir](mailto:security@dnj.co.ir) instead of using the issue tracker.
 
 ## License
 
