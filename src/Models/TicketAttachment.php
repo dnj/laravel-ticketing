@@ -5,14 +5,17 @@ namespace dnj\Ticket\Models;
 use dnj\Filesystem\Contracts\IFile;
 use dnj\Filesystem\Local;
 use dnj\Ticket\Casts\File;
+use dnj\Ticket\Contracts\IAttachment;
 use dnj\Ticket\Database\Factories\TicketAttachmentFactory;
+use dnj\UserLogger\Concerns\Loggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 
-class TicketAttachment extends Model
+class TicketAttachment extends Model implements IAttachment
 {
     use HasFactory;
+    use Loggable;
 
     public static function fromUpload(UploadedFile $file): self
     {
@@ -58,5 +61,45 @@ class TicketAttachment extends Model
             $file = self::putFileInStorage($file);
         }
         $this->file = $file;
+    }
+
+    public function getID(): int
+    {
+        return $this->id;
+    }
+
+    public function getMessageId(): ?int
+    {
+        return $this->message_id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getFile(): IFile
+    {
+        return $this->file;
+    }
+
+    public function getMime(): string
+    {
+        return $this->mime;
+    }
+
+    public function getSize(): int
+    {
+        return $this->size;
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updated_at;
     }
 }

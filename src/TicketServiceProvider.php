@@ -3,6 +3,14 @@
 namespace dnj\Ticket;
 
 use dnj\Ticket\Console\PurgeTicketAttachment;
+use dnj\Ticket\Contracts\IAttachmentManager;
+use dnj\Ticket\Contracts\IDepartmentManager;
+use dnj\Ticket\Contracts\IMessageManager;
+use dnj\Ticket\Contracts\ITicketManager;
+use dnj\Ticket\Managers\DepartmentManager;
+use dnj\Ticket\Managers\TicketAttachmentManager;
+use dnj\Ticket\Managers\TicketManager;
+use dnj\Ticket\Managers\TicketMessageManager;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,6 +20,10 @@ class TicketServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/ticket.php', 'ticket');
         $this->app->register('dnj\UserLogger\ServiceProvider');
+        $this->app->singleton(IDepartmentManager::class, DepartmentManager::class);
+        $this->app->singleton(ITicketManager::class, TicketManager::class);
+        $this->app->singleton(IMessageManager::class, TicketMessageManager::class);
+        $this->app->singleton(IAttachmentManager::class, TicketAttachmentManager::class);
     }
 
     public function boot()

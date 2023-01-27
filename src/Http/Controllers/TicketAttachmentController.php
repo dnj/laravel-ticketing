@@ -3,36 +3,41 @@
 namespace dnj\Ticket\Http\Controllers;
 
 use dnj\Filesystem\Tmp\File;
-use dnj\Ticket\Http\Controllers\Concerns\WorksWithAttachments;
+use dnj\Ticket\Contracts\IAttachmentManager;
 use dnj\Ticket\Http\Requests\TicketAttachmentRequest;
 use dnj\Ticket\Http\Resources\TicketAttachmentResource;
-use dnj\Ticket\Models\TicketAttachment;
 use Illuminate\Routing\Controller;
 
 class TicketAttachmentController extends Controller
 {
-    use WorksWithAttachments;
+    public function __construct(protected IAttachmentManager $attachmentManager)
+    {
+    }
 
     public function store(TicketAttachmentRequest $request)
     {
-        $attachments = $this->saveAttachments($request);
+        $attachments = [];
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $attachments[] = $this->attachmentManager->storeByUpload($file, $request->input('message_id'), true);
+            }
+        }
 
         return new TicketAttachmentResource($attachments);
     }
 
-    public function show(TicketAttachment $ticketAttachment)
+    public function show(int $id)
     {
+        $ticketAttachment = $this->attachmentManager->find($id);
         $localFile = File::insureLocal($ticketAttachment->file);
 
         return response()->download($localFile->getPath());
     }
 
-    public function destroy(TicketAttachment $ticketAttachment)
+    public function destroy(int $id)
     {
-        if (TicketAttachment::where('file', serialize($ticketAttachment->file))->count() <= 1) {
-            $ticketAttachment->file->delete();
-        }
-        $ticketAttachment->delete();
+        $this->attachmentManager->destroy($id, true);
 
         return response()->noContent();
     }
